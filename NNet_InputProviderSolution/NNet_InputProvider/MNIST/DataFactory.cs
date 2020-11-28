@@ -19,7 +19,8 @@ namespace NNet_InputProvider.MNIST
             Image[] imgs = GetImages(fs_labels, fs_imgs);
 
             Sample[] result = new Sample[imgs.Length]; ;
-
+            Sample.Tolerance = sampleTolerance;
+            
             for (int i = 0; i < imgs.Length; i++)
             {
                 result[i] = new Sample()
