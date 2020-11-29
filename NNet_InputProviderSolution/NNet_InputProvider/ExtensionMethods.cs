@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,6 +19,16 @@ namespace NNet_InputProvider
 
             return result;
         }
+        public static void ForEach<T>(this T[,] source, Action<int, int> action)
+        {
+            for (int i = 0; i < source.GetLength(0); i++)
+            {
+                for (int k = 0; k < source.GetLength(1); k++)
+                {
+                    action(i, k);
+                }
+            }
+        }
         public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> collection)
         {
             Random rnd = new Random();
@@ -36,6 +47,46 @@ namespace NNet_InputProvider
 
             return result;
         }
+        /// <summary>
+        /// Only meant for small example data sets. 
+        /// Huge sample collections can throw 'OutOfMemory' exception here.
+        /// </summary>
+        public static string ToJson<T>(this T obj)
+        {
+            return JsonConvert.SerializeObject(obj, Formatting.Indented);
+        }
+        /// <summary>
+        /// Only meant for small  example data sets. 
+        /// Huge sample collections can throw 'OutOfMemory' exception here.
+        /// </summary>
+        public static bool Save<T>(this T obj, string file, StorageFormat format)
+        {
+            switch (format)
+            {
+                case StorageFormat.Undefined:
+                    return false;
+                case StorageFormat.ByteArray:
+                    throw new NotImplementedException();
+                case StorageFormat.Idx3ubyte:
+                    throw new NotImplementedException();
+                case StorageFormat.Json:
+                    try
+                    {                        
+                        File.WriteAllText(file, obj.ToJson());
+                        return true;
+                    }
+                    catch (Exception)
+                    {
+                        throw;
+                        // return false;
+                    }
+                default:
+                    return false;
+            }
+        }
+
+        #region https://stackoverflow.com/a/49407977
+
         public static int ReadBigInt32(this BinaryReader br)
         {
             var bytes = br.ReadBytes(sizeof(int));
@@ -43,15 +94,7 @@ namespace NNet_InputProvider
                 Array.Reverse(bytes);
             return BitConverter.ToInt32(bytes, 0);
         }
-        public static void ForEach<T>(this T[,] source, Action<int, int> action)
-        {
-            for (int w = 0; w < source.GetLength(0); w++)
-            {
-                for (int h = 0; h < source.GetLength(1); h++)
-                {
-                    action(w, h);
-                }
-            }
-        }
+
+        #endregion
     }
 }

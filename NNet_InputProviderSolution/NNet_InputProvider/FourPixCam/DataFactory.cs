@@ -1,48 +1,53 @@
 ﻿using MatrixHelper;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace NNet_InputProvider.FourPixCam
 {
-    public class DataFactory
+    public enum Label
+    {
+        Undefined, AllBlack, AllWhite, LeftBlack, LeftWhite, SlashBlack, SlashWhite, TopBlack, TopWhite
+    }
+
+    public class DataFactory : BaseDataFactory
     {
         #region ctor & fields
 
-        static Random rnd;
-        static Dictionary<Label, Matrix> rawInputs;
-        static Dictionary<Label, Matrix> distortedInputs;
-        static Dictionary<Label, Matrix> validInputs;
-        static Dictionary<Label, Matrix> validOutputs;
-        static Sample[] validSamples;
+        static string
+            url_TrainLabels = "",
+            url_TrainImages = "",
+            url_TestLabels = "",
+            url_TestImages = "";
+
+        Random rnd;
+        Dictionary<Label, Matrix> rawInputs;
+        Dictionary<Label, Matrix> distortedInputs;
+        Dictionary<Label, Matrix> validInputs;
+        Dictionary<Label, Matrix> validOutputs;
+        Sample[] validSamples;
+
+        /// <summary>
+        /// Order:
+        /// Url_TrainingLabels, string Url_TrainingImages, string Url_TestingLabels, string Url_TestingImages
+        /// </summary>
+        public DataFactory(params string[] urls) : base(urls) { }
+        /// <summary>
+        /// Defining urls with last known addresses.
+        /// </summary>
+        public DataFactory()
+        {
+            Url_TrainLabels = url_TrainLabels;
+            Url_TrainImages = url_TrainImages;
+            Url_TestLabels = url_TestLabels;
+            Url_TestImages = url_TestImages;
+        }
 
         #endregion
 
         #region public
 
-        public static bool SaveTrainingDataToJson(int samples, float sampleTolerance, float distortion, string file)
-        {
-            var trDat = GetTrainingDataAsJson(samples, sampleTolerance, distortion);
-            try
-            {
-                // File.CreateText(file);
-                File.WriteAllText(file, trDat);
-                return true;
-            }
-            catch (Exception)
-            {
-                throw;
-                // return false;
-            }
-        }
-        public static string GetTrainingDataAsJson(int samples, float sampleTolerance, float distortion)
-        {
-            var trDat = GetTrainingData(samples, sampleTolerance, distortion);
-            return JsonConvert.SerializeObject(trDat, Formatting.Indented);
-        }
-        public static Sample[] GetTrainingData(int samples, float sampleTolerance, float distortion)
+        public Sample[] GetTrainingSamples(int samples, float sampleTolerance, float distortion)
         {
             rnd = RandomProvider.GetThreadRandom();
 
@@ -55,7 +60,7 @@ namespace NNet_InputProvider.FourPixCam
 
             return GetValidTrainingData(samples, validSamples);
         }
-        public static Sample[] GetTestingData(int multiplyer)
+        public Sample[] GetTestingSamples(int multiplyer)
         {
             var result = new List<Sample>();
             for (int i = 0; i < multiplyer; i++)
@@ -69,7 +74,7 @@ namespace NNet_InputProvider.FourPixCam
 
         #region helper methods
 
-        static Sample[] GetValidTrainingData(int sampleSize, Sample[] _validSamples)
+        Sample[] GetValidTrainingData(int sampleSize, Sample[] _validSamples)
         {
             List<Sample> tmpResult = new List<Sample>();
             int amountOfCompleteSampleSets = (int)Math.Round((double)sampleSize / rawInputs.Values.Count, 0);
@@ -82,7 +87,7 @@ namespace NNet_InputProvider.FourPixCam
 
             return result;
         }
-        static Sample[] GetValidSamples()
+        Sample[] GetValidSamples()
         {
             var result = new List<Sample>();
 
@@ -100,7 +105,7 @@ namespace NNet_InputProvider.FourPixCam
 
             return result.ToArray();
         }
-        static Dictionary<Label, Matrix> GetRawInputs()
+        Dictionary<Label, Matrix> GetRawInputs()
         {
             return new Dictionary<Label, Matrix>
             {
@@ -137,7 +142,7 @@ namespace NNet_InputProvider.FourPixCam
                     { 1, -1 } })
             };
         }
-        static Dictionary<Label, Matrix> GetDistortedInputs(float d)
+        Dictionary<Label, Matrix> GetDistortedInputs(float d)
         {
             return new Dictionary<Label, Matrix>
             {
@@ -174,16 +179,16 @@ namespace NNet_InputProvider.FourPixCam
                     { (GetDistortedValue(d)), -(GetDistortedValue(d)) } })
             };
         }
-        static float GetDistortedValue(float distortionDeviation)
+        float GetDistortedValue(float distortionDeviation)
         {
             return 1f - (float)rnd.NextDouble() * distortionDeviation;
         }
-        static Dictionary<Label, Matrix> GetValidInputs(Dictionary<Label, Matrix> _rawInputs)
+        Dictionary<Label, Matrix> GetValidInputs(Dictionary<Label, Matrix> _rawInputs)
         {
             var test = _rawInputs.ToDictionary(x => x.Key, x => Operations.FlattenToOneColumn(x.Value));
             return test;
         }
-        static Dictionary<Label, Matrix> GetValidOutputs()
+        Dictionary<Label, Matrix> GetValidOutputs()
         {
             return new Dictionary<Label, Matrix>
             {

@@ -1,8 +1,9 @@
 ﻿using MatrixHelper;
+using NNet_InputProvider.FourPixCam;
 using System;
 using System.Text.Json.Serialization;
 
-namespace NNet_InputProvider.FourPixCam
+namespace NNet_InputProvider
 {
     public class Sample
     {
