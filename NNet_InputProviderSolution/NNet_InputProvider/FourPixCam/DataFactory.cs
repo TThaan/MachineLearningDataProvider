@@ -15,7 +15,10 @@ namespace NNet_InputProvider.FourPixCam
     {
         #region ctor & fields
 
-        static string
+        const float
+            inputDistortion = .3f,
+            targetTolerance = .2f;
+        const string
             url_TrainLabels = "",
             url_TrainImages = "",
             url_TestLabels = "",
