@@ -1,6 +1,7 @@
 ﻿using MatrixHelper;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace NNet_InputProvider.FourPixCam
@@ -31,80 +32,18 @@ namespace NNet_InputProvider.FourPixCam
         /// Order:
         /// Url_TrainingLabels, string Url_TrainingImages, string Url_TestingLabels, string Url_TestingImages
         /// </summary>
-        public DataFactory(params string[] urls) : base(urls) { }
+        public DataFactory(params string[] urls) : base(urls)
+        {
+            rnd = RandomProvider.GetThreadRandom();
+            rawInputs = GetRawInputs();
+        }
         /// <summary>
         /// Defining urls with last known addresses.
         /// </summary>
-        public DataFactory()
-        {
-            Url_TrainLabels = url_TrainLabels;
-            Url_TrainImages = url_TrainImages;
-            Url_TestLabels = url_TestLabels;
-            Url_TestImages = url_TestImages;
-        }
+        public DataFactory() : base(url_TrainLabels, url_TrainImages, url_TestLabels, url_TestImages) { }
 
-        #endregion
+        #region helpers
 
-        #region public
-
-        public Sample[] GetTrainingSamples(int samples, float sampleTolerance, float distortion)
-        {
-            rnd = RandomProvider.GetThreadRandom();
-
-            rawInputs = GetRawInputs();
-            distortedInputs = GetDistortedInputs(distortion);
-            validInputs = GetValidInputs(distortedInputs);
-            validOutputs = GetValidOutputs();
-            Sample.Tolerance = sampleTolerance;
-            validSamples = GetValidSamples();
-
-            return GetValidTrainingData(samples, validSamples);
-        }
-        public Sample[] GetTestingSamples(int multiplyer)
-        {
-            var result = new List<Sample>();
-            for (int i = 0; i < multiplyer; i++)
-            {
-                result.AddRange(validSamples);
-            }
-            return result.ToArray();
-        }
-
-        #endregion
-
-        #region helper methods
-
-        Sample[] GetValidTrainingData(int sampleSize, Sample[] _validSamples)
-        {
-            List<Sample> tmpResult = new List<Sample>();
-            int amountOfCompleteSampleSets = (int)Math.Round((double)sampleSize / rawInputs.Values.Count, 0);
-
-            for (int i = 0; i < amountOfCompleteSampleSets; i++)
-            {
-                tmpResult.AddRange(_validSamples);
-            }
-            Sample[] result = tmpResult.Shuffle().ToArray();
-
-            return result;
-        }
-        Sample[] GetValidSamples()
-        {
-            var result = new List<Sample>();
-
-            var labels = Enum.GetValues(typeof(Label)).ToList<Label>().Skip(1);
-            foreach (var label in labels)
-            {
-                result.Add(new Sample
-                {
-                    Label = label,
-                    RawInput = rawInputs[label],
-                    Input = validInputs[label],
-                    ExpectedOutput = validOutputs[label]
-                });
-            }
-
-            return result.ToArray();
-        }
         Dictionary<Label, Matrix> GetRawInputs()
         {
             return new Dictionary<Label, Matrix>
@@ -141,6 +80,62 @@ namespace NNet_InputProvider.FourPixCam
                     { -1, 1 },
                     { 1, -1 } })
             };
+        }
+
+        #endregion
+
+        #endregion
+
+        #region BaseDataFactory
+
+        public override Sample[] CreateSamples(int samples, float inputDistortion, float targetTolerance)
+        {
+            distortedInputs = GetDistortedInputs(inputDistortion);
+            validInputs = GetValidInputs(distortedInputs);
+            validOutputs = GetValidOutputs();
+            Sample.Tolerance = targetTolerance;
+            validSamples = GetValidSamples();
+            return GetValidTrainingData(samples, validSamples);
+        }
+        protected override Sample[] GetSamplesFromStream(FileStream fs_labels, FileStream fs_imgs)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region helper methods (Sample Creation)
+
+        Sample[] GetValidTrainingData(int sampleSize, Sample[] _validSamples)
+        {
+            List<Sample> tmpResult = new List<Sample>();
+            int amountOfCompleteSampleSets = (int)Math.Round((double)sampleSize / rawInputs.Values.Count, 0);
+
+            for (int i = 0; i < amountOfCompleteSampleSets; i++)
+            {
+                tmpResult.AddRange(_validSamples);
+            }
+            Sample[] result = tmpResult.Shuffle().ToArray();
+
+            return result;
+        }
+        Sample[] GetValidSamples()
+        {
+            var result = new List<Sample>();
+
+            var labels = Enum.GetValues(typeof(Label)).ToList<Label>().Skip(1);
+            foreach (var label in labels)
+            {
+                result.Add(new Sample
+                {
+                    Label = label,
+                    RawInput = rawInputs[label],
+                    Input = validInputs[label],
+                    ExpectedOutput = validOutputs[label]
+                });
+            }
+
+            return result.ToArray();
         }
         Dictionary<Label, Matrix> GetDistortedInputs(float d)
         {

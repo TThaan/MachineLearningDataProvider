@@ -16,7 +16,7 @@ namespace NNet_InputProvider
 
         #region public
 
-        public static float Tolerance { get; set; }
+        public static float Tolerance { get; set; } = 0;
         public Label Label { get; set; }
         public Matrix RawInput { get; set; }
         public Matrix Input { get; set; }

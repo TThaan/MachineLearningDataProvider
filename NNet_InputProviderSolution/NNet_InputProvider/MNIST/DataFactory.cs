@@ -1,8 +1,6 @@
 ﻿using MatrixHelper;
 using System;
 using System.IO;
-using System.IO.Compression;
-using System.Net;
 
 namespace NNet_InputProvider.MNIST
 {
@@ -24,110 +22,40 @@ namespace NNet_InputProvider.MNIST
         /// <summary>
         /// Defining urls with last known addresses.
         /// </summary>
-        public DataFactory()
-        {
-            Url_TrainLabels = url_TrainLabels;
-            Url_TrainImages = url_TrainImages;
-            Url_TestLabels = url_TestLabels;
-            Url_TestImages = url_TestImages;
-        }
+        public DataFactory() : base(url_TrainLabels, url_TrainImages, url_TestLabels, url_TestImages) { }
 
         #endregion
 
-        #region public
+        #region BaseDataFactory
 
-        public Sample[] GetTrainingSamples(float sampleTolerance, float distortion)
+        public override Sample[] CreateSamples(int samples, float inputDistortion, float targetTolerance)
         {
-            return GetSamples(Url_TrainLabels, Url_TrainImages, sampleTolerance, distortion, "training");
+            throw new NotImplementedException();
         }
-        public Sample[] GetTestingSamples(float sampleTolerance, float distortion)
+        protected override Sample[] GetSamplesFromStream(FileStream fs_labels, FileStream fs_imgs)
         {
-            return GetSamples(Url_TestLabels, Url_TestImages, sampleTolerance, distortion, "testing");
-        }
-
-        #region default links
-
-        #endregion
-
-        #endregion
-
-        #region helpers 
-
-        Sample[] GetSamples(string labelsUri, string imgsUri, float sampleTolerance, float distortion, string prefix)
-        {
-            string path_labels = GetFileFromUrl(labelsUri, prefix, "labels");
-            FileStream fs_labels = new FileStream(path_labels, FileMode.Open);
-            string path_imgs = GetFileFromUrl(imgsUri, prefix, "images");
-            FileStream fs_imgs = new FileStream(path_imgs, FileMode.Open);
-
-            Image[] imgs = GetImages(fs_labels, fs_imgs);
-
-            Sample[] result = new Sample[imgs.Length];
-            Sample.Tolerance = sampleTolerance;
-
-            for (int i = 0; i < imgs.Length; i++)
             {
-                result[i] = new Sample()
+                Image[] imgs = GetImages(fs_labels, fs_imgs);
+                Sample[] result = new Sample[imgs.Length];
+
+                for (int i = 0; i < imgs.Length; i++)
                 {
-                    ExpectedOutput = GetExpectedOutput(imgs, i),
-                    Input = GetInput(imgs, i),
-                    RawInput = GetRawInput(imgs, i),
-                };
-            }
-
-            return result;
-        }
-        /// <summary>
-        /// Get data from url including saving it to disk (tmp directory).
-        /// </summary>
-        string DownloadFileAndGetPath(string uri)
-        {
-            string path = Path.GetTempPath() + @"trainDataLabels.gz";
-            byte[] labelsArray = new WebClient().DownloadData(uri);
-
-            using (var memStream = new MemoryStream(labelsArray))
-            {
-                using (var zipStream = new GZipStream(memStream, CompressionMode.Decompress))
-                {
-                    byte[] buffer = new byte[zipStream.Length];
-                    zipStream.Read(buffer, 0, buffer.Length);
-
-                    using (var fileStream = File.Create(path))
+                    result[i] = new Sample()
                     {
-                        fileStream.Write(buffer, 0 , buffer.Length);
-                        // or without saving to disk
-
-                    }
+                        ExpectedOutput = GetExpectedOutput(imgs, i),
+                        Input = GetInput(imgs, i),
+                        RawInput = GetRawInput(imgs, i),
+                    };
                 }
-            }
 
-            return path;
-        }
-        /// <summary>
-        /// Get data from url without saving it to disk.
-        /// </summary>
-        string GetFileFromUrl(string uri, string prefix, string suffix)
-        {
-            string path = Path.GetTempPath() + prefix + suffix;
-            byte[] labelsArray = new WebClient().DownloadData(uri);
-
-            using (var memStream = new MemoryStream(labelsArray))
-            {
-                using (var zipStream = new GZipStream(memStream, CompressionMode.Decompress))
-                {
-                    byte[] buffer = new byte[0x10000];
-
-                    using (var fileStream = File.Create(path))
-                    {
-                        while (zipStream.Read(buffer, 0, buffer.Length) > 0)
-                        {
-                            fileStream.Write(buffer, 0, buffer.Length);
-                        }
-                        return path;
-                    }
-                }
+                return result;
             }
         }
+
+        #endregion
+
+        #region (child class dedicated) helpers 
+
         /// <summary>
         /// Convert Stream to (MNIST) Image format.
         /// </summary>
