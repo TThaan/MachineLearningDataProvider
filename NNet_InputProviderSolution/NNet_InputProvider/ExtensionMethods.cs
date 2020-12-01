@@ -8,7 +8,7 @@ namespace NNet_InputProvider
 {
     public static class ExtensionMethods
     {
-        public static List<T> ToList<T>(this Array arr)
+        internal static List<T> ToList<T>(this Array arr)
         {
             var result = new List<T>();
 
@@ -19,17 +19,24 @@ namespace NNet_InputProvider
 
             return result;
         }
-        public static void ForEach<T>(this T[,] source, Action<int, int> action)
+        internal static void ForEach<T>(this Array source, Action<T> action)
         {
             for (int i = 0; i < source.GetLength(0); i++)
             {
-                for (int k = 0; k < source.GetLength(1); k++)
-                {
-                    action(i, k);
-                }
+                action((T)source.GetValue(i));
             }
         }
-        public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> collection)
+        //internal static void ForEach<T>(this T[,] source, Action<int, int> action)
+        //{
+        //    for (int i = 0; i < source.GetLength(0); i++)
+        //    {
+        //        for (int k = 0; k < source.GetLength(1); k++)
+        //        {
+        //            action(i, k);
+        //        }
+        //    }
+        //}
+        internal static IEnumerable<T> Shuffle<T>(this IEnumerable<T> collection)
         {
             Random rnd = new Random();
 

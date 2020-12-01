@@ -8,27 +8,15 @@ namespace NNet_InputProvider.MNIST
     {
         #region ctor & fields
 
-        static string 
-            url_TrainLabels = "http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz",
-            url_TrainImages = "http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz",
-            url_TestLabels = "http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz",
-            url_TestImages = "http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz";
+        const SetName name = SetName.MNIST;
 
-        /// <summary>
-        /// Order:
-        /// Url_TrainingLabels, string Url_TrainingImages, string Url_TestingLabels, string Url_TestingImages
-        /// </summary>
-        public DataFactory(params string[] urls) : base(urls) { }
-        /// <summary>
-        /// Defining urls with last known addresses.
-        /// </summary>
-        public DataFactory() : base(url_TrainLabels, url_TrainImages, url_TestLabels, url_TestImages) { }
+        public DataFactory() : base(name) { }
 
         #endregion
 
         #region BaseDataFactory
 
-        public override Sample[] CreateSamples(int samples, float inputDistortion, float targetTolerance)
+        protected override Sample[] CreateSamples(int samples, float inputDistortion, float targetTolerance)
         {
             throw new NotImplementedException();
         }

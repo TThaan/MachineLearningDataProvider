@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace NNet_InputProvider.FourPixCam
 {
+    // In ..?:
     public enum Label
     {
         Undefined, AllBlack, AllWhite, LeftBlack, LeftWhite, SlashBlack, SlashWhite, TopBlack, TopWhite
@@ -15,14 +16,7 @@ namespace NNet_InputProvider.FourPixCam
     {
         #region ctor & fields
 
-        const float
-            inputDistortion = .3f,
-            targetTolerance = .2f;
-        const string
-            url_TrainLabels = "",
-            url_TrainImages = "",
-            url_TestLabels = "",
-            url_TestImages = "";
+        const SetName name = SetName.FourPixelCamera;
 
         Random rnd;
         Dictionary<Label, Matrix> rawInputs;
@@ -31,19 +25,28 @@ namespace NNet_InputProvider.FourPixCam
         Dictionary<Label, Matrix> validOutputs;
         Sample[] validSamples;
 
-        /// <summary>
-        /// Order:
-        /// Url_TrainingLabels, string Url_TrainingImages, string Url_TestingLabels, string Url_TestingImages
-        /// </summary>
-        public DataFactory(params string[] urls) : base(urls)
+        public DataFactory() : base(name) { }
+
+        #endregion
+
+        #region BaseDataFactory
+
+        protected override Sample[] CreateSamples(int samples, float inputDistortion, float targetTolerance)
         {
             rnd = RandomProvider.GetThreadRandom();
             rawInputs = GetRawInputs();
+
+            distortedInputs = GetDistortedInputs(inputDistortion);
+            validInputs = GetValidInputs(distortedInputs);
+            validOutputs = GetValidOutputs();
+            Sample.Tolerance = targetTolerance;
+            validSamples = GetValidSamples();
+            return GetValidTrainingData(samples, validSamples);
         }
-        /// <summary>
-        /// Defining urls with last known addresses.
-        /// </summary>
-        public DataFactory() : base(url_TrainLabels, url_TrainImages, url_TestLabels, url_TestImages) { }
+        protected override Sample[] GetSamplesFromStream(FileStream fs_labels, FileStream fs_imgs)
+        {
+            throw new NotImplementedException();
+        }
 
         #region helpers
 
@@ -84,31 +87,6 @@ namespace NNet_InputProvider.FourPixCam
                     { 1, -1 } })
             };
         }
-
-        #endregion
-
-        #endregion
-
-        #region BaseDataFactory
-
-        public override Sample[] CreateSamples(int samples, float inputDistortion, float targetTolerance)
-        {
-            distortedInputs = GetDistortedInputs(inputDistortion);
-            validInputs = GetValidInputs(distortedInputs);
-            validOutputs = GetValidOutputs();
-            Sample.Tolerance = targetTolerance;
-            validSamples = GetValidSamples();
-            return GetValidTrainingData(samples, validSamples);
-        }
-        protected override Sample[] GetSamplesFromStream(FileStream fs_labels, FileStream fs_imgs)
-        {
-            throw new NotImplementedException();
-        }
-
-        #endregion
-
-        #region helper methods (Sample Creation)
-
         Sample[] GetValidTrainingData(int sampleSize, Sample[] _validSamples)
         {
             List<Sample> tmpResult = new List<Sample>();
@@ -207,6 +185,8 @@ namespace NNet_InputProvider.FourPixCam
                 [Label.SlashBlack] = new Matrix(new float[] { 0, 0, 0, 1 })
             };
         }
+
+        #endregion
 
         #endregion
     }

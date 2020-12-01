@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -12,125 +11,66 @@ namespace NNet_InputProvider
         #region ctor
 
         /// <summary>
-        /// Order:
-        /// Url_TrainingLabels, string Url_TrainingImages, string Url_TestingLabels, string Url_TestingImages
+        /// Get the default SampleSet of the selected provider ('name').
         /// </summary>
-        public BaseDataFactory(params string[] urls)
+        public BaseDataFactory(SetName name)
         {
-            if (urls.Length != 4)
-                throw new ArgumentException("There must be exactly 4 urls/paths passed to (Base)DataFactory!");
-
-            Paths = new Dictionary<Tuple<SamplePurpose, SampleProperty>, string>
-            {
-                [new Tuple<SamplePurpose, SampleProperty>(item1: SamplePurpose.Training, item2: SampleProperty.Label)] = urls[0],
-                [new Tuple<SamplePurpose, SampleProperty>(item1: SamplePurpose.Training, item2: SampleProperty.Data)] = urls[1],
-                [new Tuple<SamplePurpose, SampleProperty>(item1: SamplePurpose.Testing, item2: SampleProperty.Label)] = urls[2],
-                [new Tuple<SamplePurpose, SampleProperty>(item1: SamplePurpose.Testing, item2: SampleProperty.Data)] = urls[3]
-            };
+            Set = new SampleSetParameters(name);
+            SetDefaultValues();
         }
-
-        #endregion
-
-        #region public
-
-        public Dictionary<Tuple<SamplePurpose, SampleProperty>, string> Paths { get; protected set; }
-
-        public string Url_TrainImages => Paths.Values.ElementAt(0);
-        public string Url_TrainLabels => Paths.Values.ElementAt(1);
-        public string Url_TestImages => Paths.Values.ElementAt(2);
-        public string Url_TestLabels => Paths.Values.ElementAt(3);
-
-        public Sample[] TrainingSamples { get; protected set; }
-        public Sample[] TestingSamples { get; protected set; }
-
-        public abstract Sample[] CreateSamples(int samples, float inputDistortion, float targetTolerance);
-        public Sample[] GetSamples(SamplePurpose purpose)
+        /// <summary>
+        /// Get a SampleSet with customized SampleSetParameters.
+        /// </summary>
+        public BaseDataFactory(SampleSetParameters set)
         {
-            // Try to get samples from local files
-            if (!(
-                File.Exists(Paths.Single(x => x.Key.Item1 == purpose && x.Key.Item2 == SampleProperty.Label).Value) && 
-                File.Exists(Paths.Single(x => x.Key.Item1 == purpose && x.Key.Item2 == SampleProperty.Data).Value)
-                ))
-            {
-                // If not all local files were found under given paths/urls, 
-                // try to get samples from web under those paths/urls 
-                // and store them as local files.
-                try
-                {
-                    Paths[new Tuple<SamplePurpose, SampleProperty> (item1:purpose, item2:SampleProperty.Label)] 
-                        = GetFileFromUrl(purpose, SampleProperty.Label);
-                    Paths[new Tuple<SamplePurpose, SampleProperty>(item1: purpose, item2: SampleProperty.Data)] 
-                        = GetFileFromUrl(purpose, SampleProperty.Data);
-                }
-                catch (Exception)
-                {
-                    throw new FileNotFoundException("At least one of your paths represents neither a path to a local file nor an active web link.");
-                }
-            }
-
-            // Try again to get samples from local files
-            FileStream fs_labels = new FileStream(
-                Paths[new Tuple<SamplePurpose, SampleProperty>(item1: purpose, item2: SampleProperty.Label)],
-                FileMode.Open);
-            FileStream fs_imgs = new FileStream(
-                Paths[new Tuple<SamplePurpose, SampleProperty>(item1: purpose, item2: SampleProperty.Data)],
-                FileMode.Open);
-
-            if (purpose == SamplePurpose.Training)
-            {
-                return TrainingSamples = GetSamplesFromStream(fs_labels, fs_imgs);
-            }
-            else
-            {
-                return TestingSamples = GetSamplesFromStream(fs_labels, fs_imgs);
-            }
+            Set = set;
+            SetDefaultValues();
         }
-
-        #region Abstract
-
-        // protected abstract Sample[] GetSamplesFromWeb(SamplePurpose purpose, SampleProperty prop);
-        // protected abstract Sample[] GetSamplesFromLocalPath(string path_labels, string path_images);
-
-        protected abstract Sample[] GetSamplesFromStream(FileStream fs_labels, FileStream fs_imgs);
-
-        #endregion
-
-        #endregion
 
         #region helpers
 
-        string GetCurrentUrl(SamplePurpose purpose, SampleProperty prop)
+        void SetDefaultValues()
         {
-            string uri;
-            if (purpose == SamplePurpose.Training)
+            GetSamples();
+            if (TrainingSamples?.Length! > 0 || TestingSamples?.Length! > 0)
             {
-                if (prop == SampleProperty.Label)
-                {
-                    uri = Url_TrainLabels;
-                }
-                else
-                {
-                    uri = Url_TrainImages;
-                }
+                TrainingSamples = CreateSamples(Set.TrainingSamples, Set.InputDistortion, Set.TargetTolerance);
+                TestingSamples = CreateSamples(Set.TestingSamples, Set.InputDistortion, Set.TargetTolerance);
             }
-            else
+        }
+        void GetSamples()
+        {
+            // If not all paths exist locally
+
+            if (Set.Paths.Values.Any(x => !File.Exists(x)))
             {
-                if (prop == SampleProperty.Label)
+                // try them as urls and store them locally.
+
+                try
                 {
-                    uri = Url_TestLabels;
+                    Enum.GetValues(typeof(SampleType))
+                        .ForEach<SampleType>(x => Set.Paths[x] = GetFileFromUrl(x));
                 }
-                else
+                catch (Exception)
                 {
-                    uri = Url_TestImages;
+                    throw;
                 }
             }
 
-            return uri;
+            // Get samples from local path.
+
+            FileStream fs_trainLabels = new FileStream(Set.Paths[SampleType.TestingData], FileMode.Open);
+            FileStream fs_trainData = new FileStream(Set.Paths[SampleType.TestingData], FileMode.Open);
+            FileStream fs_testLabels = new FileStream(Set.Paths[SampleType.TestingData], FileMode.Open);
+            FileStream fs_testData = new FileStream(Set.Paths[SampleType.TestingData], FileMode.Open);
+
+            TrainingSamples = GetSamplesFromStream(fs_trainLabels, fs_trainData);
+            TestingSamples = GetSamplesFromStream(fs_testLabels, fs_testData);
         }
-        string GetFileFromUrl(SamplePurpose purpose, SampleProperty prop)
+        string GetFileFromUrl(SampleType sampleType)
         {
-            string uri = GetCurrentUrl(purpose, prop);
-            string localPath = Path.GetTempPath() + purpose.ToString() + prop.ToString();
+            string uri = Set.Paths[sampleType];
+            string localPath = Path.GetTempPath() + sampleType.ToString();
 
             byte[] labelsArray = new WebClient().DownloadData(uri);
 
@@ -151,8 +91,22 @@ namespace NNet_InputProvider
                 }
             }
         }
+        protected abstract Sample[] GetSamplesFromStream(FileStream fs_labels, FileStream fs_imgs);
+        protected abstract Sample[] CreateSamples(int samples, float inputDistortion, float targetTolerance);
 
-        // ...
+        #endregion
+
+        #endregion
+
+        #region public
+
+        public SampleSetParameters Set { get; protected set; }        
+        public Sample[] TrainingSamples { get; protected set; }
+        public Sample[] TestingSamples { get; protected set; }
+
+        #endregion
+
+        // ... not needed?
         protected string DownloadFileAndGetPath(string uri)
         {
             string path = Path.GetTempPath() + @"trainDataLabels.gz";
@@ -176,7 +130,5 @@ namespace NNet_InputProvider
 
             return path;
         }
-
-        #endregion
     }
 }

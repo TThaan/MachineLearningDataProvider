@@ -4,13 +4,12 @@
     {
         Undefined, ByteArray, Idx3ubyte, Json
     }
-    public enum SamplePurpose
+    public enum SetName //ProviderName?TemplateName?
     {
-        Testing, Training
+        FourPixelCamera, MNIST
     }
-    public enum SampleProperty
+    public enum SampleType
     {
-        Data, Label
+        TestingData, TestingLabel, TrainingData, TrainingLabel
     }
-
 }
