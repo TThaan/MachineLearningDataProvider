@@ -59,9 +59,9 @@ namespace NNet_InputProvider
 
             // Get samples from local path.
 
-            FileStream fs_trainLabels = new FileStream(Parameters.Paths[SampleType.TestingData], FileMode.Open);
-            FileStream fs_trainData = new FileStream(Parameters.Paths[SampleType.TestingData], FileMode.Open);
-            FileStream fs_testLabels = new FileStream(Parameters.Paths[SampleType.TestingData], FileMode.Open);
+            FileStream fs_trainLabels = new FileStream(Parameters.Paths[SampleType.TrainingLabel], FileMode.Open);
+            FileStream fs_trainData = new FileStream(Parameters.Paths[SampleType.TrainingData], FileMode.Open);
+            FileStream fs_testLabels = new FileStream(Parameters.Paths[SampleType.TestingLabel], FileMode.Open);
             FileStream fs_testData = new FileStream(Parameters.Paths[SampleType.TestingData], FileMode.Open);
 
             TrainingSamples = ConvertToSamples(fs_trainLabels, fs_trainData);

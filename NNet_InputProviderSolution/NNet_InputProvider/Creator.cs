@@ -54,7 +54,7 @@ namespace NNet_InputProvider
                         [SampleType.TestingLabel] = "To be created..",
                         [SampleType.TestingData] = "To be created.."
                     },
-                    TrainingSamples = 250,
+                    TrainingSamples = 1000,
                     TestingSamples = 16,
                     InputDistortion = .2f,
                     TargetTolerance = .3f
