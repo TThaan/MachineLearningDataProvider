@@ -4,13 +4,12 @@ using System.IO;
 
 namespace NNet_InputProvider.MNIST
 {
-    public class DataFactory : BaseDataFactory
+    public class MNISTSampleSet : SampleSet
     {
         #region ctor & fields
 
-        const SetName name = SetName.MNIST;
-
-        public DataFactory() : base(name) { }
+        public MNISTSampleSet(SetName setName) : base(setName) { }
+        public MNISTSampleSet(SampleSetParameters set) : base(set) { }
 
         #endregion
 
@@ -20,7 +19,7 @@ namespace NNet_InputProvider.MNIST
         {
             throw new NotImplementedException();
         }
-        protected override Sample[] GetSamplesFromStream(FileStream fs_labels, FileStream fs_imgs)
+        protected override Sample[] ConvertToSamples(FileStream fs_labels, FileStream fs_imgs)
         {
             {
                 Image[] imgs = GetImages(fs_labels, fs_imgs);

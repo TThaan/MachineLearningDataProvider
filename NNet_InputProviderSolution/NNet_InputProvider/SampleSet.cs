@@ -6,70 +6,70 @@ using System.Net;
 
 namespace NNet_InputProvider
 {
-    public abstract class BaseDataFactory
+    public abstract class SampleSet
     {
         #region ctor
 
         /// <summary>
         /// Get the default SampleSet of the selected provider ('name').
         /// </summary>
-        public BaseDataFactory(SetName name)
+        public SampleSet(SetName name)
         {
-            Set = new SampleSetParameters(name);
-            SetDefaultValues();
+            Parameters = new SampleSetParameters(name);
+            SetSamples();
         }
         /// <summary>
         /// Get a SampleSet with customized SampleSetParameters.
         /// </summary>
-        public BaseDataFactory(SampleSetParameters set)
+        public SampleSet(SampleSetParameters set)
         {
-            Set = set;
-            SetDefaultValues();
+            Parameters = set;
+            SetSamples();
         }
 
         #region helpers
 
-        void SetDefaultValues()
-        {
-            GetSamples();
-            if (TrainingSamples?.Length! > 0 || TestingSamples?.Length! > 0)
-            {
-                TrainingSamples = CreateSamples(Set.TrainingSamples, Set.InputDistortion, Set.TargetTolerance);
-                TestingSamples = CreateSamples(Set.TestingSamples, Set.InputDistortion, Set.TargetTolerance);
-            }
-        }
-        void GetSamples()
+        void SetSamples()
         {
             // If not all paths exist locally
 
-            if (Set.Paths.Values.Any(x => !File.Exists(x)))
+            if (Parameters.Paths.Values.Any(x => !File.Exists(x)))
             {
-                // try them as urls and store them locally.
+                // Log("Not all files could be found locally.")
+
+                // try to download them
 
                 try
                 {
                     Enum.GetValues(typeof(SampleType))
-                        .ForEach<SampleType>(x => Set.Paths[x] = GetFileFromUrl(x));
+                        .ForEach<SampleType>(x => Parameters.Paths[x] = GetFileFromUrl(x));
                 }
+
+                // or create them on the fly and return.
+
                 catch (Exception)
                 {
-                    throw;
+                    // Log($"{e.Message} (Maybe not all files could be found online.)")
+
+                    TrainingSamples = CreateSamples(Parameters.TrainingSamples, Parameters.InputDistortion, Parameters.TargetTolerance);
+                    TestingSamples = CreateSamples(Parameters.TestingSamples, Parameters.InputDistortion, Parameters.TargetTolerance);
+                    return;
                 }
             }
 
             // Get samples from local path.
 
-            FileStream fs_trainLabels = new FileStream(Set.Paths[SampleType.TestingData], FileMode.Open);
-            FileStream fs_trainData = new FileStream(Set.Paths[SampleType.TestingData], FileMode.Open);
-            FileStream fs_testLabels = new FileStream(Set.Paths[SampleType.TestingData], FileMode.Open);
-            FileStream fs_testData = new FileStream(Set.Paths[SampleType.TestingData], FileMode.Open);
+            FileStream fs_trainLabels = new FileStream(Parameters.Paths[SampleType.TestingData], FileMode.Open);
+            FileStream fs_trainData = new FileStream(Parameters.Paths[SampleType.TestingData], FileMode.Open);
+            FileStream fs_testLabels = new FileStream(Parameters.Paths[SampleType.TestingData], FileMode.Open);
+            FileStream fs_testData = new FileStream(Parameters.Paths[SampleType.TestingData], FileMode.Open);
 
-            TrainingSamples = GetSamplesFromStream(fs_trainLabels, fs_trainData);
-            TestingSamples = GetSamplesFromStream(fs_testLabels, fs_testData);
+            TrainingSamples = ConvertToSamples(fs_trainLabels, fs_trainData);
+            TestingSamples = ConvertToSamples(fs_testLabels, fs_testData);
         }
         string GetFileFromUrl(SampleType sampleType)
         {
-            string uri = Set.Paths[sampleType];
+            string uri = Parameters.Paths[sampleType];
             string localPath = Path.GetTempPath() + sampleType.ToString();
 
             byte[] labelsArray = new WebClient().DownloadData(uri);
@@ -91,7 +91,7 @@ namespace NNet_InputProvider
                 }
             }
         }
-        protected abstract Sample[] GetSamplesFromStream(FileStream fs_labels, FileStream fs_imgs);
+        protected abstract Sample[] ConvertToSamples(FileStream fs_labels, FileStream fs_imgs);
         protected abstract Sample[] CreateSamples(int samples, float inputDistortion, float targetTolerance);
 
         #endregion
@@ -100,7 +100,7 @@ namespace NNet_InputProvider
 
         #region public
 
-        public SampleSetParameters Set { get; protected set; }        
+        public SampleSetParameters Parameters { get; protected set; }        
         public Sample[] TrainingSamples { get; protected set; }
         public Sample[] TestingSamples { get; protected set; }
 
@@ -122,7 +122,7 @@ namespace NNet_InputProvider
                     using (var fileStream = File.Create(path))
                     {
                         fileStream.Write(buffer, 0, buffer.Length);
-                        // or without saving to disk
+                        // or without saving to disk..
 
                     }
                 }

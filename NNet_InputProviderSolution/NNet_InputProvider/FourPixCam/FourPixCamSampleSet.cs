@@ -6,17 +6,15 @@ using System.Linq;
 
 namespace NNet_InputProvider.FourPixCam
 {
-    // In ..?:
+    // In ..:
     public enum Label
     {
         Undefined, AllBlack, AllWhite, LeftBlack, LeftWhite, SlashBlack, SlashWhite, TopBlack, TopWhite
     }
 
-    public class DataFactory : BaseDataFactory
+    public class FourPixCamSampleSet : SampleSet
     {
         #region ctor & fields
-
-        const SetName name = SetName.FourPixelCamera;
 
         Random rnd;
         Dictionary<Label, Matrix> rawInputs;
@@ -25,11 +23,12 @@ namespace NNet_InputProvider.FourPixCam
         Dictionary<Label, Matrix> validOutputs;
         Sample[] validSamples;
 
-        public DataFactory() : base(name) { }
+        public FourPixCamSampleSet(SetName setName) : base(setName) { }
+        public FourPixCamSampleSet(SampleSetParameters set) : base(set) { }
 
         #endregion
 
-        #region BaseDataFactory
+        #region SampleSet
 
         protected override Sample[] CreateSamples(int samples, float inputDistortion, float targetTolerance)
         {
@@ -43,7 +42,7 @@ namespace NNet_InputProvider.FourPixCam
             validSamples = GetValidSamples();
             return GetValidTrainingData(samples, validSamples);
         }
-        protected override Sample[] GetSamplesFromStream(FileStream fs_labels, FileStream fs_imgs)
+        protected override Sample[] ConvertToSamples(FileStream fs_labels, FileStream fs_imgs)
         {
             throw new NotImplementedException();
         }
