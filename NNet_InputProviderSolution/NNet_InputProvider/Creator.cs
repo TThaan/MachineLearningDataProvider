@@ -63,10 +63,10 @@ namespace NNet_InputProvider
                 {
                     Paths = new Dictionary<SampleType, string>
                     {
-                        [SampleType.TrainingLabel] = "http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz",
-                        [SampleType.TrainingData] = "http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz",
-                        [SampleType.TestingLabel] = "http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz",
-                        [SampleType.TestingData] = "http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz"
+                        [SampleType.TrainingLabel] = "http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz",
+                        [SampleType.TrainingData] = "http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz",
+                        [SampleType.TestingLabel] = "http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz",
+                        [SampleType.TestingData] = "http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz"
                     }
                 }
             };
