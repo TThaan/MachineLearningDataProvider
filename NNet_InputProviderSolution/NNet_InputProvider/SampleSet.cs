@@ -3,6 +3,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NNet_InputProvider
 {
@@ -10,13 +12,15 @@ namespace NNet_InputProvider
     {
         #region ctor
 
+        protected string defaultPath = Path.GetTempPath();
+        int infoDisplayDuration = 1500;
+
         /// <summary>
         /// Get the default SampleSet of the selected provider ('name').
         /// </summary>
         public SampleSet(SetName name)
         {
             Parameters = new SampleSetParameters(name);
-            SetSamples();
         }
         /// <summary>
         /// Get a SampleSet with customized SampleSetParameters.
@@ -24,53 +28,97 @@ namespace NNet_InputProvider
         public SampleSet(SampleSetParameters set)
         {
             Parameters = set;
-            SetSamples();
         }
 
         #region helpers
 
-        void SetSamples()
+        public async Task SetSamples()
         {
-            // If not all paths exist locally
-
-            if (Parameters.Paths.Values.Any(x => !File.Exists(x)))
+            await Task.Run(() =>
             {
-                // Log("Not all files could be found locally.")
+                // If not all entered paths exist locally
 
-                // try to download them
+                OnSomethingHappend($"Trying to get samples locally. (Given adresses interpreted as local path.)");
+                Thread.Sleep(infoDisplayDuration);
 
-                try
+                if (Parameters.Paths.Values.Any(x => !File.Exists(x)))
                 {
-                    Enum.GetValues(typeof(SampleType))
-                        .ForEach<SampleType>(x => Parameters.Paths[x] = GetFileFromUrl(x));
+                    OnSomethingHappend($"Failed to get samples locally under the given adresses. Trying default paths and file names.");
+                    Thread.Sleep(infoDisplayDuration);
+
+                    // but all files are already in the default path
+
+                    if (Enum.GetValues(typeof(SampleType)).ToList<SampleType>()
+                        .All(x => File.Exists(defaultPath + x.ToString() + Parameters.Name)))
+                    {
+
+                        OnSomethingHappend($"Found samples under default paths and file names.");
+                        Thread.Sleep(infoDisplayDuration);
+
+                        // Exchange the entered paths/url with the default ones.
+
+                        Parameters.Paths[SampleType.TrainingLabel] = defaultPath + SampleType.TrainingLabel.ToString() + Parameters.Name;
+                        Parameters.Paths[SampleType.TrainingData] = defaultPath + SampleType.TrainingData.ToString() + Parameters.Name;
+                        Parameters.Paths[SampleType.TestingLabel] = defaultPath + SampleType.TestingLabel.ToString() + Parameters.Name;
+                        Parameters.Paths[SampleType.TestingData] = defaultPath + SampleType.TestingData.ToString() + Parameters.Name;
+                    }
+                    else
+                    {
+                        // Otherwise try to download them
+
+                        try
+                        {
+                            OnSomethingHappend($"Trying to get samples online. (Given adresses interpreted as urls.)");
+                            Thread.Sleep(infoDisplayDuration);
+
+                            Enum.GetValues(typeof(SampleType))
+                                .ForEach<SampleType>(x => Parameters.Paths[x] = GetFileFromUrl(x));
+
+                            OnSomethingHappend($"Found samples online.");
+                            Thread.Sleep(infoDisplayDuration);
+                        }
+
+                        // or create them on the fly and return.
+
+                        catch (Exception)
+                        {
+                            OnSomethingHappend($"Failed to get samples online. Trying to create samples.");
+                            Thread.Sleep(infoDisplayDuration);
+
+                            TrainingSamples = CreateSamples(Parameters.TrainingSamples, Parameters.InputDistortion, Parameters.TargetTolerance);
+                            TestingSamples = CreateSamples(Parameters.TestingSamples, Parameters.InputDistortion, Parameters.TargetTolerance);
+
+
+                            OnSomethingHappend($"Samples created by creator.");
+                            Thread.Sleep(infoDisplayDuration);
+                            return;
+                        }
+                    }
                 }
-
-                // or create them on the fly and return.
-
-                catch (Exception)
+                else
                 {
-                    // Log($"{e.Message} (Maybe not all files could be found online.)")
-
-                    TrainingSamples = CreateSamples(Parameters.TrainingSamples, Parameters.InputDistortion, Parameters.TargetTolerance);
-                    TestingSamples = CreateSamples(Parameters.TestingSamples, Parameters.InputDistortion, Parameters.TargetTolerance);
-                    return;
+                    OnSomethingHappend($"Found samples under the given paths and file names.");
+                    Thread.Sleep(infoDisplayDuration);
                 }
-            }
+                // Get samples from local path.
 
-            // Get samples from local path.
+                FileStream fs_trainLabels = new FileStream(Parameters.Paths[SampleType.TrainingLabel], FileMode.Open);
+                FileStream fs_trainData = new FileStream(Parameters.Paths[SampleType.TrainingData], FileMode.Open);
+                FileStream fs_testLabels = new FileStream(Parameters.Paths[SampleType.TestingLabel], FileMode.Open);
+                FileStream fs_testData = new FileStream(Parameters.Paths[SampleType.TestingData], FileMode.Open);
 
-            FileStream fs_trainLabels = new FileStream(Parameters.Paths[SampleType.TrainingLabel], FileMode.Open);
-            FileStream fs_trainData = new FileStream(Parameters.Paths[SampleType.TrainingData], FileMode.Open);
-            FileStream fs_testLabels = new FileStream(Parameters.Paths[SampleType.TestingLabel], FileMode.Open);
-            FileStream fs_testData = new FileStream(Parameters.Paths[SampleType.TestingData], FileMode.Open);
+                TrainingSamples = ConvertToSamples(fs_trainLabels, fs_trainData);
+                TestingSamples = ConvertToSamples(fs_testLabels, fs_testData);
 
-            TrainingSamples = ConvertToSamples(fs_trainLabels, fs_trainData);
-            TestingSamples = ConvertToSamples(fs_testLabels, fs_testData);
+                OnSomethingHappend($"Success. Samples received.");
+                Thread.Sleep(infoDisplayDuration);
+
+            });
         }
         string GetFileFromUrl(SampleType sampleType)
         {
             string uri = Parameters.Paths[sampleType];
-            string localPath = Path.GetTempPath() + sampleType.ToString();
+            string fileName = defaultPath + sampleType.ToString() + Parameters.Name;
 
             byte[] labelsArray = new WebClient().DownloadData(uri);
 
@@ -80,13 +128,13 @@ namespace NNet_InputProvider
                 {
                     byte[] buffer = new byte[0x10000];
 
-                    using (var fileStream = File.Create(localPath))
+                    using (var fileStream = File.Create(fileName))
                     {
                         while (zipStream.Read(buffer, 0, buffer.Length) > 0)
                         {
                             fileStream.Write(buffer, 0, buffer.Length);
                         }
-                        return localPath;
+                        return fileName;
                     }
                 }
             }
@@ -130,5 +178,25 @@ namespace NNet_InputProvider
 
             return path;
         }
+
+        #region Events
+
+        public delegate void SomethingHappendEventHandler(string whatHappend);
+        public event SomethingHappendEventHandler SomethingHappend;
+        void OnSomethingHappend(string whatHappend)
+        {
+            SomethingHappend?.Invoke(whatHappend);
+        }
+
+        //public delegate Task<bool> PausedEventHandler(string pauseInfo);
+        //public event PausedEventHandler Paused;
+        //async Task<bool> OnPausedAsync(string pauseInfo)
+        //{
+        //    if (Paused == null)
+        //        return true;
+        //    return await Paused.Invoke(pauseInfo);
+        //}
+
+        #endregion
     }
 }

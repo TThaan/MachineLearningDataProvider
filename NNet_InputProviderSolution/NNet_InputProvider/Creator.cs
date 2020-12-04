@@ -14,27 +14,37 @@ namespace NNet_InputProvider
 
         public static SampleSet GetSampleSet(SampleSetParameters sampleSetParameters)
         {
+            SampleSet result;
+
             switch (sampleSetParameters.Name)
             {
                 case SetName.FourPixelCamera:
-                    return new FourPixCamSampleSet(sampleSetParameters);
+                    result = new FourPixCamSampleSet(sampleSetParameters);
+                    break;
                 case SetName.MNIST:
-                    return new MNISTSampleSet(sampleSetParameters);
+                    result = new MNISTSampleSet(sampleSetParameters);
+                    break;
                 default:
                     throw new ArgumentException($"Couldn't find a fitting SampleSet to given SetName {sampleSetParameters.Name}.");
             }
+            return result;
         }
         public static SampleSet GetSampleSet(SetName setName)
         {
+            SampleSet result;
+
             switch (setName)
             {
                 case SetName.FourPixelCamera:
-                    return new FourPixCamSampleSet(setName);
+                    result = new FourPixCamSampleSet(setName);
+                    break;
                 case SetName.MNIST:
-                    return new MNISTSampleSet(setName);
+                    result = new MNISTSampleSet(setName);
+                    break;
                 default:
                     throw new ArgumentException($"Couldn't find a fitting SampleSet to given SetName {setName}.");
             }
+            return result;
         }
 
         #endregion
@@ -67,7 +77,9 @@ namespace NNet_InputProvider
                         [SampleType.TrainingData] = "http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz",
                         [SampleType.TestingLabel] = "http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz",
                         [SampleType.TestingData] = "http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz"
-                    }
+                    },
+                    TrainingSamples = 60000,
+                    TestingSamples = 10000
                 }
             };
         }
