@@ -17,11 +17,8 @@ namespace NNet_InputProvider.FourPixCam
         #region ctor & fields
 
         Random rnd;
-        Dictionary<Label, Matrix> rawInputs;
-        Dictionary<Label, Matrix> distortedInputs;
-        Dictionary<Label, Matrix> validInputs;
-        Dictionary<Label, Matrix> validOutputs;
-        Sample[] validSamples;
+        Dictionary<Label, Matrix> rawInputs, validInputs, validOutputs;
+        Sample[] validSamples, allSamples;
 
         public FourPixCamSampleSet(SetName setName) : base(setName) { }
         public FourPixCamSampleSet(SampleSetParameters set) : base(set) { }
@@ -30,17 +27,18 @@ namespace NNet_InputProvider.FourPixCam
 
         #region SampleSet
 
-        protected override Sample[] CreateSamples(int samples, float inputDistortion, float targetTolerance)
+        protected override Sample[] CreateSamples(int samplesCount, float inputDistortion, float targetTolerance)
         {
             rnd = RandomProvider.GetThreadRandom();
-            rawInputs = GetRawInputs();
-
-            distortedInputs = GetDistortedInputs(inputDistortion);
-            validInputs = GetValidInputs(distortedInputs);
-            validOutputs = GetValidOutputs();
             Sample.Tolerance = targetTolerance;
+
+            rawInputs = GetRawInputs();
+            validInputs = GetValidInputs(rawInputs);
+            validOutputs = GetValidOutputs();
             validSamples = GetValidSamples();
-            return GetValidTrainingData(samples, validSamples);
+            allSamples = GetMultipliedSamples(validSamples, samplesCount, inputDistortion);
+            DistortSamples(allSamples, inputDistortion);
+            return allSamples;
         }
         protected override Sample[] ConvertToSamples(FileStream fs_labels, FileStream fs_imgs)
         {
@@ -49,6 +47,7 @@ namespace NNet_InputProvider.FourPixCam
 
         #region helpers
 
+        // Actually: To be defined as object in Sample!
         Dictionary<Label, Matrix> GetRawInputs()
         {
             return new Dictionary<Label, Matrix>
@@ -86,82 +85,9 @@ namespace NNet_InputProvider.FourPixCam
                     { 1, -1 } })
             };
         }
-        Sample[] GetValidTrainingData(int sampleSize, Sample[] _validSamples)
-        {
-            List<Sample> tmpResult = new List<Sample>();
-            int amountOfCompleteSampleSets = (int)Math.Round((double)sampleSize / rawInputs.Values.Count, 0);
-
-            for (int i = 0; i < amountOfCompleteSampleSets; i++)
-            {
-                tmpResult.AddRange(_validSamples);
-            }
-            Sample[] result = tmpResult.Shuffle().ToArray();
-
-            return result;
-        }
-        Sample[] GetValidSamples()
-        {
-            var result = new List<Sample>();
-
-            var labels = Enum.GetValues(typeof(Label)).ToList<Label>().Skip(1);
-            foreach (var label in labels)
-            {
-                result.Add(new Sample
-                {
-                    Label = label,
-                    RawInput = rawInputs[label],
-                    Input = validInputs[label],
-                    ExpectedOutput = validOutputs[label]
-                });
-            }
-
-            return result.ToArray();
-        }
-        Dictionary<Label, Matrix> GetDistortedInputs(float d)
-        {
-            return new Dictionary<Label, Matrix>
-            {
-                [Label.AllBlack] = new Matrix(new float[,] {
-                    { -(GetDistortedValue(d)), -(GetDistortedValue(d)) },
-                    { -(GetDistortedValue(d)), -(GetDistortedValue(d)) } }),
-
-                [Label.AllWhite] = new Matrix(new float[,] {
-                    { (GetDistortedValue(d)), (GetDistortedValue(d)) },
-                    { (GetDistortedValue(d)), (GetDistortedValue(d)) } }),
-
-                [Label.TopBlack] = new Matrix(new float[,] {
-                    { -(GetDistortedValue(d)), -(GetDistortedValue(d)) },
-                    { (GetDistortedValue(d)), (GetDistortedValue(d)) } }),
-
-                [Label.TopWhite] = new Matrix(new float[,] {
-                    { (GetDistortedValue(d)), (GetDistortedValue(d)) },
-                    { -(GetDistortedValue(d)), -(GetDistortedValue(d)) } }),
-
-                [Label.LeftBlack] = new Matrix(new float[,] {
-                    { -(GetDistortedValue(d)), (GetDistortedValue(d)) },
-                    { -(GetDistortedValue(d)), (GetDistortedValue(d)) } }),
-
-                [Label.LeftWhite] = new Matrix(new float[,] {
-                    { (GetDistortedValue(d)), -(GetDistortedValue(d)) },
-                    { (GetDistortedValue(d)), -(GetDistortedValue(d)) } }),
-
-                [Label.SlashBlack] = new Matrix(new float[,] {
-                    { (GetDistortedValue(d)), -(GetDistortedValue(d)) },
-                    { -(GetDistortedValue(d)), (GetDistortedValue(d)) } }),
-
-                [Label.SlashWhite] = new Matrix(new float[,] {
-                    { -(GetDistortedValue(d)), (GetDistortedValue(d)) },
-                    { (GetDistortedValue(d)), -(GetDistortedValue(d)) } })
-            };
-        }
-        float GetDistortedValue(float distortionDeviation)
-        {
-            return 1f - (float)rnd.NextDouble() * distortionDeviation;
-        }
         Dictionary<Label, Matrix> GetValidInputs(Dictionary<Label, Matrix> _rawInputs)
         {
-            var test = _rawInputs.ToDictionary(x => x.Key, x => Operations.FlattenToOneColumn(x.Value));
-            return test;
+            return _rawInputs.ToDictionary(x => x.Key, x => Operations.FlattenToOneColumn(x.Value));
         }
         Dictionary<Label, Matrix> GetValidOutputs()
         {
@@ -183,6 +109,52 @@ namespace NNet_InputProvider.FourPixCam
 
                 [Label.SlashBlack] = new Matrix(new float[] { 0, 0, 0, 1 })
             };
+        }
+        Sample[] GetValidSamples()
+        {
+            var result = new List<Sample>();
+
+            var labels = Enum.GetValues(typeof(Label)).ToList<Label>().Skip(1);
+            foreach (var label in labels)
+            {
+                result.Add(new Sample
+                {
+                    Label = label,
+                    RawInput = rawInputs[label],
+                    Input = validInputs[label],
+                    ExpectedOutput = validOutputs[label]
+                });
+            }
+
+            return result.ToArray();
+        }
+        Sample[] GetMultipliedSamples(Sample[] _validSamples, int sampleSize, float inputDistortion)
+        {
+            List<Sample> result = new List<Sample>();
+            int multiplicationFactor = (int)Math.Round((double)sampleSize / rawInputs.Values.Count, 0);
+
+            for (int i = 0; i < multiplicationFactor; i++)
+            {
+                result.AddRange(_validSamples.Select(x => new Sample()
+                {
+                    Label = x.Label,
+                    RawInput = new Matrix(x.RawInput),
+                    Input = new Matrix(x.Input),
+                    ExpectedOutput = new Matrix(x.ExpectedOutput),
+                }));
+            }
+
+            return result.Shuffle().ToArray();
+        }
+        void DistortSamples(Sample[] samples, float inputDistortion)
+        {
+            samples.ForEach<Sample>(x => x.Input.ForEach(y => y = GetDistortedValue(y, inputDistortion)));
+        }
+        float GetDistortedValue(float value, float inputDistortion)
+        {
+            var test = (float)rnd.NextDouble();
+            var result = value * (1f - test * inputDistortion);
+            return result;
         }
 
         #endregion

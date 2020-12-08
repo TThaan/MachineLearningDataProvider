@@ -66,7 +66,7 @@ namespace NNet_InputProvider
                     },
                     TrainingSamples = 1000,
                     TestingSamples = 16,
-                    InputDistortion = .2f,
+                    InputDistortion = 0.2f,
                     TargetTolerance = .3f
                 },
                 [SetName.MNIST] = new SampleSetParameters(SetName.MNIST)

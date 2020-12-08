@@ -13,7 +13,7 @@ namespace NNet_InputProvider
         #region ctor
 
         protected string defaultPath = Path.GetTempPath();
-        int infoDisplayDuration = 1500;
+        int infoDisplayDuration = 1;//500
 
         /// <summary>
         /// Get the default SampleSet of the selected provider ('name').

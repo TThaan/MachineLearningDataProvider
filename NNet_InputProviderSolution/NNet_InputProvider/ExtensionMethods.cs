@@ -26,16 +26,13 @@ namespace NNet_InputProvider
                 action((T)source.GetValue(i));
             }
         }
-        //internal static void ForEach<T>(this T[,] source, Action<int, int> action)
-        //{
-        //    for (int i = 0; i < source.GetLength(0); i++)
-        //    {
-        //        for (int k = 0; k < source.GetLength(1); k++)
-        //        {
-        //            action(i, k);
-        //        }
-        //    }
-        //}
+        internal static void ForEach<T, TResult>(this Array source, Func<T, TResult> func)
+        {
+            for (int i = 0; i < source.GetLength(0); i++)
+            {
+                source.SetValue(func((T)source.GetValue(i)), i);
+            }
+        }
         internal static IEnumerable<T> Shuffle<T>(this IEnumerable<T> collection)
         {
             Random rnd = new Random();
