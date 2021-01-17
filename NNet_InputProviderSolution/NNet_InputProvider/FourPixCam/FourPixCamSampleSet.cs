@@ -17,7 +17,7 @@ namespace NNet_InputProvider.FourPixCam
         #region ctor & fields
 
         Random rnd;
-        Dictionary<Label, Matrix> rawInputs, validInputs, validOutputs;
+        Dictionary<Label, IMatrix> rawInputs, validInputs, validOutputs;
         Sample[] validSamples, allSamples;
 
         public FourPixCamSampleSet(SetName setName) : base(setName) { }
@@ -27,7 +27,7 @@ namespace NNet_InputProvider.FourPixCam
 
         #region SampleSet
 
-        protected override Sample[] CreateSamples(int samplesCount, float inputDistortion, float targetTolerance)
+        protected override Sample[] CreateSamples(int trainingSamplesCount, float inputDistortion, float targetTolerance)
         {
             rnd = RandomProvider.GetThreadRandom();
             Sample.Tolerance = targetTolerance;
@@ -36,8 +36,23 @@ namespace NNet_InputProvider.FourPixCam
             validInputs = GetValidInputs(rawInputs);
             validOutputs = GetValidOutputs();
             validSamples = GetValidSamples();
-            allSamples = GetMultipliedSamples(validSamples, samplesCount, inputDistortion);
+            allSamples = GetMultipliedSamples(validSamples, trainingSamplesCount, inputDistortion);
             DistortSamples(allSamples, inputDistortion);
+
+            // debug
+            //allSamples[0].RawInput = new Matrix(new float[,] {
+            //        { -1, -1 },
+            //        { -1, -1 } });
+            //allSamples[0].Input[0] = -.85f;
+            //allSamples[0].Input[1] = -.95f;
+            //allSamples[0].Input[2] = -.89f;
+            //allSamples[0].Input[3] = -.90f;
+            //allSamples[0].ExpectedOutput[0] = 1;
+            //allSamples[0].ExpectedOutput[1] = 0;
+            //allSamples[0].ExpectedOutput[2] = 0;
+            //allSamples[0].ExpectedOutput[3] = 0;
+            //allSamples[0].Label = Label.AllBlack;
+
             return allSamples;
         }
         protected override Sample[] ConvertToSamples(FileStream fs_labels, FileStream fs_imgs)
@@ -48,9 +63,9 @@ namespace NNet_InputProvider.FourPixCam
         #region helpers
 
         // Actually: To be defined as object in Sample!
-        Dictionary<Label, Matrix> GetRawInputs()
+        Dictionary<Label, IMatrix> GetRawInputs()
         {
-            return new Dictionary<Label, Matrix>
+            return new Dictionary<Label, IMatrix>
             {
                 [Label.AllBlack] = new Matrix(new float[,] {
                     { -1, -1 },
@@ -85,13 +100,13 @@ namespace NNet_InputProvider.FourPixCam
                     { 1, -1 } })
             };
         }
-        Dictionary<Label, Matrix> GetValidInputs(Dictionary<Label, Matrix> _rawInputs)
+        Dictionary<Label, IMatrix> GetValidInputs(Dictionary<Label, IMatrix> _rawInputs)
         {
             return _rawInputs.ToDictionary(x => x.Key, x => Operations.FlattenToOneColumn(x.Value));
         }
-        Dictionary<Label, Matrix> GetValidOutputs()
+        Dictionary<Label, IMatrix> GetValidOutputs()
         {
-            return new Dictionary<Label, Matrix>
+            return new Dictionary<Label, IMatrix>
             {
                 [Label.AllWhite] = new Matrix(new float[] { 1, 0, 0, 0 }),
 
@@ -130,13 +145,14 @@ namespace NNet_InputProvider.FourPixCam
         }
         Sample[] GetMultipliedSamples(Sample[] _validSamples, int sampleSize, float inputDistortion)
         {
-            List<Sample> result = new List<Sample>();
+            List<Sample> resultList = new List<Sample>();
             int multiplicationFactor = (int)Math.Round((double)sampleSize / rawInputs.Values.Count, 0);
 
             for (int i = 0; i < multiplicationFactor; i++)
             {
-                result.AddRange(_validSamples.Select(x => new Sample()
+                resultList.AddRange(_validSamples.Select((x, index) => new Sample()
                 {
+                    Id = _validSamples.Length * i + index,
                     Label = x.Label,
                     RawInput = new Matrix(x.RawInput),
                     Input = new Matrix(x.Input),
@@ -144,7 +160,14 @@ namespace NNet_InputProvider.FourPixCam
                 }));
             }
 
-            return result.Shuffle().ToArray();
+            // debug
+            var idTest_List = resultList.GroupBy(x => x.Id);
+            bool hm = idTest_List.All(y => y.Count() == 1);
+
+            var resultArray = resultList.Shuffle().ToArray();
+            var idTest_Array = resultArray.GroupBy(x => x.Id);
+            bool hm2 = idTest_Array.All(y => y.Count() == 1);
+            return resultArray;
         }
         void DistortSamples(Sample[] samples, float inputDistortion)
         {
@@ -152,9 +175,9 @@ namespace NNet_InputProvider.FourPixCam
         }
         float GetDistortedValue(float value, float inputDistortion)
         {
-            var test = (float)rnd.NextDouble();
-            var result = value * (1f - test * inputDistortion);
-            return result;
+            double test = value * (1f - rnd.NextDouble() * inputDistortion);
+            // float result = (float)Math.Round(test, 2);
+            return (float)test;
         }
 
         #endregion

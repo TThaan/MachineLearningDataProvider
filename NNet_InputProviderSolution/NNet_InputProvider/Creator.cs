@@ -1,4 +1,5 @@
-﻿using NNet_InputProvider.FourPixCam;
+﻿using NNet_InputProvider.Custom;
+using NNet_InputProvider.FourPixCam;
 using NNet_InputProvider.MNIST;
 using System;
 using System.Collections.Generic;
@@ -40,6 +41,9 @@ namespace NNet_InputProvider
                     break;
                 case SetName.MNIST:
                     result = new MNISTSampleSet(setName);
+                    break;
+                case SetName.Custom:
+                    result = new CustomSampleSet(setName);
                     break;
                 default:
                     throw new ArgumentException($"Couldn't find a fitting SampleSet to given SetName {setName}.");

@@ -13,7 +13,7 @@ namespace NNet_InputProvider
         #region ctor
 
         protected string defaultPath = Path.GetTempPath();
-        int infoDisplayDuration = 1;//500
+        int infoDisplayDuration = 1;//500   // in ui?
 
         /// <summary>
         /// Get the default SampleSet of the selected provider ('name').
@@ -38,12 +38,13 @@ namespace NNet_InputProvider
             {
                 // If not all entered paths exist locally
 
-                OnSomethingHappend($"Trying to get samples locally. (Given adresses interpreted as local path.)");
+                OnStatusChanged($"Trying to get samples locally. (Given adresses interpreted as local path.)");
                 Thread.Sleep(infoDisplayDuration);
 
-                if (Parameters.Paths.Values.Any(x => !File.Exists(x)))
+                if (Parameters.Paths == null || Parameters.Paths.Count == 0 || 
+                Parameters.Paths.Values.Any(x => !File.Exists(x)))
                 {
-                    OnSomethingHappend($"Failed to get samples locally under the given adresses. Trying default paths and file names.");
+                    OnStatusChanged($"Failed to get samples locally under the given adresses. Trying default paths and file names.");
                     Thread.Sleep(infoDisplayDuration);
 
                     // but all files are already in the default path
@@ -52,7 +53,7 @@ namespace NNet_InputProvider
                         .All(x => File.Exists(defaultPath + x.ToString() + Parameters.Name)))
                     {
 
-                        OnSomethingHappend($"Found samples under default paths and file names.");
+                        OnStatusChanged($"Found samples under default paths and file names.");
                         Thread.Sleep(infoDisplayDuration);
 
                         // Exchange the entered paths/url with the default ones.
@@ -68,13 +69,13 @@ namespace NNet_InputProvider
 
                         try
                         {
-                            OnSomethingHappend($"Trying to get samples online. (Given adresses interpreted as urls.)");
+                            OnStatusChanged($"Trying to get samples online. (Given adresses interpreted as urls.)");
                             Thread.Sleep(infoDisplayDuration);
 
                             Enum.GetValues(typeof(SampleType))
                                 .ForEach<SampleType>(x => Parameters.Paths[x] = GetFileFromUrl(x));
 
-                            OnSomethingHappend($"Found samples online.");
+                            OnStatusChanged($"Found samples online.");
                             Thread.Sleep(infoDisplayDuration);
                         }
 
@@ -82,14 +83,14 @@ namespace NNet_InputProvider
 
                         catch (Exception)
                         {
-                            OnSomethingHappend($"Failed to get samples online. Trying to create samples.");
+                            OnStatusChanged($"Failed to get samples online. Trying to create samples.");
                             Thread.Sleep(infoDisplayDuration);
 
                             TrainingSamples = CreateSamples(Parameters.TrainingSamples, Parameters.InputDistortion, Parameters.TargetTolerance);
                             TestingSamples = CreateSamples(Parameters.TestingSamples, Parameters.InputDistortion, Parameters.TargetTolerance);
 
 
-                            OnSomethingHappend($"Samples created by creator.");
+                            OnStatusChanged($"Samples created by creator.");
                             Thread.Sleep(infoDisplayDuration);
                             return;
                         }
@@ -97,7 +98,7 @@ namespace NNet_InputProvider
                 }
                 else
                 {
-                    OnSomethingHappend($"Found samples under the given paths and file names.");
+                    OnStatusChanged($"Found samples under the given paths and file names.");
                     Thread.Sleep(infoDisplayDuration);
                 }
                 // Get samples from local path.
@@ -110,7 +111,7 @@ namespace NNet_InputProvider
                 TrainingSamples = ConvertToSamples(fs_trainLabels, fs_trainData);
                 TestingSamples = ConvertToSamples(fs_testLabels, fs_testData);
 
-                OnSomethingHappend($"Success. Samples received.");
+                OnStatusChanged($"Success. Samples received.");
                 Thread.Sleep(infoDisplayDuration);
 
             });
@@ -140,8 +141,8 @@ namespace NNet_InputProvider
             }
         }
         protected abstract Sample[] ConvertToSamples(FileStream fs_labels, FileStream fs_imgs);
-        protected abstract Sample[] CreateSamples(int samples, float inputDistortion, float targetTolerance);
-
+        protected abstract Sample[] CreateSamples(int samplesCount, float inputDistortion, float targetTolerance);
+        
         #endregion
 
         #endregion
@@ -149,8 +150,8 @@ namespace NNet_InputProvider
         #region public
 
         public SampleSetParameters Parameters { get; protected set; }        
-        public Sample[] TrainingSamples { get; protected set; }
-        public Sample[] TestingSamples { get; protected set; }
+        public Sample[] TrainingSamples { get; set; }
+        public Sample[] TestingSamples { get; set; }
 
         #endregion
 
@@ -181,11 +182,10 @@ namespace NNet_InputProvider
 
         #region Events
 
-        public delegate void SomethingHappendEventHandler(string whatHappend);
-        public event SomethingHappendEventHandler SomethingHappend;
-        void OnSomethingHappend(string whatHappend)
+        public event StatusChangedEventHandler StatusChanged;
+        void OnStatusChanged(string info)
         {
-            SomethingHappend?.Invoke(whatHappend);
+            StatusChanged?.Invoke(this, new StatusChangedEventArgs(info));
         }
 
         //public delegate Task<bool> PausedEventHandler(string pauseInfo);

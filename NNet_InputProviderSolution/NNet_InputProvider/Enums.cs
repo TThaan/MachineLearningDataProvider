@@ -6,7 +6,8 @@
     }
     public enum SetName //ProviderName?TemplateName?
     {
-        FourPixelCamera, MNIST
+        FourPixelCamera, MNIST,
+        Custom
     }
     public enum SampleType
     {
