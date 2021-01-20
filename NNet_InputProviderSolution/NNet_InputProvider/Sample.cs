@@ -1,17 +1,17 @@
 ﻿using MatrixHelper;
 using NNet_InputProvider.FourPixCam;
 using System;
-using System.Text.Json.Serialization;
 
 namespace NNet_InputProvider
 {
     [Serializable]
-    public class Sample // : ISample
+    public class Sample //: ILoggable// : ISample
     {
         #region fields
 
-        bool isOutputCorrect;
-        IMatrix actualOutput;
+        // bool isOutputCorrect;
+        // IMatrix actualOutput;
+        // ILogger _logger;
 
         #endregion
 
@@ -24,19 +24,19 @@ namespace NNet_InputProvider
         public IMatrix Input { get; set; }
         public IMatrix ExpectedOutput { get; set; }
 
-        [JsonIgnore]
-        public IMatrix ActualOutput 
-        {
-            get => actualOutput;
-            set
-            {
-                // Always when 'ActualOutput' is (re)set change 'isOutputCorrect' to null.
-                // isOutputCorrect = null;
-                actualOutput = value;
-            }
-        }
-        [JsonIgnore]
-        public bool IsOutputCorrect => IsOutputApproximatelyCorrect();
+        //[JsonIgnore]
+        //public IMatrix ActualOutput 
+        //{
+        //    get => actualOutput;
+        //    set
+        //    {
+        //        // Always when 'ActualOutput' is (re)set change 'isOutputCorrect' to null.
+        //        // isOutputCorrect = null;
+        //        actualOutput = value;
+        //    }
+        //}
+        // [JsonIgnore]
+        // public bool IsOutputCorrect => IsOutputApproximatelyCorrect();
         // https://stackoverflow.com/a/25769147
         // throw new ArgumentException("You cannot check the output when there is no actual output.");
 
@@ -44,13 +44,13 @@ namespace NNet_InputProvider
 
         #region helpers
 
-        bool IsOutputApproximatelyCorrect()
+        public bool IsOutputApproximatelyCorrect(IMatrix actualOutput)
         {
-            if (ActualOutput.m == ExpectedOutput.m && ActualOutput.n == 1 && ExpectedOutput.n == 1)
+            if (actualOutput.m == ExpectedOutput.m && actualOutput.n == 1 && ExpectedOutput.n == 1)
             {
-                for (int j = 0; j < ActualOutput.m; j++)
+                for (int j = 0; j < actualOutput.m; j++)
                 {
-                    var a_j = ActualOutput[j];
+                    var a_j = actualOutput[j];
                     var t_j = ExpectedOutput[j];
                     var x = Math.Abs(t_j - a_j);
                     if (x > Tolerance)
@@ -61,6 +61,16 @@ namespace NNet_InputProvider
             }
             return true;
         }
+
+        #endregion
+
+        #region ILoggable
+
+        //public string LoggableName => $"Sample {Id}";
+        //public string ToLog()
+        //{
+        //    throw new NotImplementedException();
+        //}
 
         #endregion
     }
