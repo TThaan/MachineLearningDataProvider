@@ -154,9 +154,9 @@ namespace NNet_InputProvider.FourPixCam
                 {
                     Id = _validSamples.Length * i + index,
                     Label = x.Label,
-                    RawInput = new Matrix(x.RawInput),
-                    Input = new Matrix(x.Input),
-                    ExpectedOutput = new Matrix(x.ExpectedOutput),
+                    RawInput = new Matrix(x.RawInput, "Sample.RawInput"),
+                    Input = new Matrix(x.Input, "Sample.Input"),
+                    ExpectedOutput = new Matrix(x.ExpectedOutput, "Sample.Output"),
                 }));
             }
 
