@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace NNet_InputProvider.FourPixCam
+namespace DeepLearningDataProvider.FourPixCam
 {
     // In ..:
     public enum Label

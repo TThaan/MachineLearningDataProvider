@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace NNet_InputProvider.Custom
+namespace DeepLearningDataProvider.Custom
 {
     public class CustomSampleSet : SampleSet
     {

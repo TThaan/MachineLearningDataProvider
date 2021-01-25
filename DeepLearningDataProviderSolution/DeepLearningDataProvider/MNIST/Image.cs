@@ -1,4 +1,4 @@
-﻿namespace NNet_InputProvider.MNIST
+﻿namespace DeepLearningDataProvider.MNIST
 {
     public class Image
     {

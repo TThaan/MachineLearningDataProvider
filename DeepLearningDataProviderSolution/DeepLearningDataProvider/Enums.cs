@@ -1,4 +1,4 @@
-﻿namespace NNet_InputProvider
+﻿namespace DeepLearningDataProvider
 {
     public enum StorageFormat
     {

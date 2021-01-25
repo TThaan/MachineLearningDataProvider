@@ -6,7 +6,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NNet_InputProvider
+namespace DeepLearningDataProvider
 {
     public abstract class SampleSet
     {

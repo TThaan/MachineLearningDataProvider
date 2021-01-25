@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace NNet_InputProvider
+namespace DeepLearningDataProvider
 {
     public class SampleSetParameters
     {

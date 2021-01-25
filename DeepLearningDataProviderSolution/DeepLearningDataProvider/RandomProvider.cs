@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace NNet_InputProvider
+namespace DeepLearningDataProvider
 {
     /// <summary>
     /// https://stackoverflow.com/a/7251724

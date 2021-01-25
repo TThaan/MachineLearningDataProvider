@@ -1,8 +1,8 @@
 ﻿using MatrixHelper;
-using NNet_InputProvider.FourPixCam;
+using DeepLearningDataProvider.FourPixCam;
 using System;
 
-namespace NNet_InputProvider
+namespace DeepLearningDataProvider
 {
     [Serializable]
     public class Sample //: ILoggable// : ISample

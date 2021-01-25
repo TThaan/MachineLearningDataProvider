@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NNet_InputProvider
+namespace DeepLearningDataProvider
 {
     public delegate void StatusChangedEventHandler(object sender, StatusChangedEventArgs e);
     public class StatusChangedEventArgs : EventArgs

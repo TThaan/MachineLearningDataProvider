@@ -2,7 +2,7 @@
 using System;
 using System.IO;
 
-namespace NNet_InputProvider.MNIST
+namespace DeepLearningDataProvider.MNIST
 {
     public class MNISTSampleSet : SampleSet
     {

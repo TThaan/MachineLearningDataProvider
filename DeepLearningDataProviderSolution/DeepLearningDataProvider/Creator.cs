@@ -1,10 +1,10 @@
-﻿using NNet_InputProvider.Custom;
-using NNet_InputProvider.FourPixCam;
-using NNet_InputProvider.MNIST;
+﻿using DeepLearningDataProvider.Custom;
+using DeepLearningDataProvider.FourPixCam;
+using DeepLearningDataProvider.MNIST;
 using System;
 using System.Collections.Generic;
 
-namespace NNet_InputProvider
+namespace DeepLearningDataProvider
 {
     public static class Creator
     {
