@@ -9,7 +9,7 @@ namespace DeepLearningDataProvider
     /// <summary>
     /// Steward = Factory + Store
     /// </summary>
-    public interface ISamplesSteward
+    public interface ISampleSetSteward
     {
         ISampleSet SampleSet { get; }
         Dictionary<SetName, ISampleSetParameters> Templates { get; }
@@ -21,7 +21,7 @@ namespace DeepLearningDataProvider
     /// <summary>
     /// Steward = Factory + Store
     /// </summary>
-    public class SampleSetSteward : ISamplesSteward
+    public class SampleSetSteward : ISampleSetSteward
     {
         #region fields
 
