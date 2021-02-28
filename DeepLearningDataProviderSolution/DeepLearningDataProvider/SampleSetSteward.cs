@@ -15,8 +15,8 @@ namespace DeepLearningDataProvider
         ISampleSet SampleSet { get; }
         Dictionary<SetName, ISampleSetParameters> Templates { get; }
         IEnumerable<SampleType> Types { get; }
-        Task<ISampleSet> CreateSampleSetAsync(ISampleSetParameters sampleSetParameters, PropertyChangedEventHandler[] eventHandlers);
-        Task<ISampleSet> CreateDefaultSampleSetAsync(SetName setName, PropertyChangedEventHandler[] eventHandlers);
+        Task<ISampleSet> CreateSampleSetAsync(ISampleSetParameters sampleSetParameters);
+        Task<ISampleSet> CreateDefaultSampleSetAsync(SetName setName);
     }
 
     /// <summary>
@@ -24,10 +24,16 @@ namespace DeepLearningDataProvider
     /// </summary>
     public class SampleSetSteward : ISampleSetSteward
     {
-        #region fields
+        #region fields & ctor
 
+        private readonly PropertyChangedEventHandler[] _eventHandlers;
         Dictionary<SetName, ISampleSetParameters> templates;
         IEnumerable<SampleType> types;
+
+        public SampleSetSteward(params PropertyChangedEventHandler[] eventHandlers)
+        {
+            _eventHandlers = eventHandlers;
+        }
 
         #endregion
 
@@ -41,23 +47,23 @@ namespace DeepLearningDataProvider
         /// <summary>
         /// Get a SampleSet with customized parameters.
         /// </summary>
-        public async Task<ISampleSet> CreateSampleSetAsync(ISampleSetParameters sampleSetParameters, params PropertyChangedEventHandler[] eventHandlers)
+        public async Task<ISampleSet> CreateSampleSetAsync(ISampleSetParameters sampleSetParameters)
         {
-            SampleSetFactoryBase factory = GetDedicatedFactory(sampleSetParameters.Name, eventHandlers);
+            SampleSetFactoryBase factory = GetDedicatedFactory(sampleSetParameters.Name);
             return SampleSet = await factory.CreateSampleSetAsync(sampleSetParameters);
         }
         /// <summary>
         /// Get the default SampleSet for a given SetName
         /// </summary>
-        public async Task<ISampleSet> CreateDefaultSampleSetAsync(SetName setName, params PropertyChangedEventHandler[] eventHandlers)
+        public async Task<ISampleSet> CreateDefaultSampleSetAsync(SetName setName)
         {
-            SampleSetFactoryBase factory = GetDedicatedFactory(setName, eventHandlers);
+            SampleSetFactoryBase factory = GetDedicatedFactory(setName);
             return SampleSet = await factory.CreateDefaultSampleSetAsync(setName);
         }
 
         #region helpers
 
-        private SampleSetFactoryBase GetDedicatedFactory(SetName setName, params PropertyChangedEventHandler[] eventHandlers)
+        private SampleSetFactoryBase GetDedicatedFactory(SetName setName)
         {
             SampleSetFactoryBase result;
             switch (setName)
@@ -72,7 +78,7 @@ namespace DeepLearningDataProvider
                     throw new ArgumentException($"Couldn't find a fitting SampleSet to the given SetName {setName}.");
             }
             Status = result.Status;
-            eventHandlers.ForEach<PropertyChangedEventHandler>(x => result.PropertyChanged += x);
+            _eventHandlers.ForEach<PropertyChangedEventHandler>(x => result.PropertyChanged += x);
             return result;
         }
         private Dictionary<SetName, ISampleSetParameters> GetTemplates()
