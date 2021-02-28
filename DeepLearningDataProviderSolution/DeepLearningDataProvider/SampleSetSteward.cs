@@ -11,6 +11,7 @@ namespace DeepLearningDataProvider
     /// </summary>
     public interface ISampleSetSteward
     {
+        string Status { get; }
         ISampleSet SampleSet { get; }
         Dictionary<SetName, ISampleSetParameters> Templates { get; }
         IEnumerable<SampleType> Types { get; }
@@ -32,6 +33,7 @@ namespace DeepLearningDataProvider
 
         #region public
 
+        public string Status { get; private set; }
         public ISampleSet SampleSet { get; private set; }
         public Dictionary<SetName, ISampleSetParameters> Templates => templates ?? (templates = GetTemplates());
         public IEnumerable<SampleType> Types => types ?? (types = GetTypes());
@@ -69,7 +71,7 @@ namespace DeepLearningDataProvider
                 default:
                     throw new ArgumentException($"Couldn't find a fitting SampleSet to the given SetName {setName}.");
             }
-
+            Status = result.Status;
             eventHandlers.ForEach<PropertyChangedEventHandler>(x => result.PropertyChanged += x);
             return result;
         }
