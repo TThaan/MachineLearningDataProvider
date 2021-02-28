@@ -3,61 +3,32 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
-namespace DeepLearningDataProvider.FourPixCam
+namespace DeepLearningDataProvider.Factories
 {
-    // In ..:
-    public enum Label
+    public class FourPixCamSampleSetFactory : SampleSetFactoryBase
     {
-        Undefined, AllBlack, AllWhite, LeftBlack, LeftWhite, SlashBlack, SlashWhite, TopBlack, TopWhite
-    }
+        public enum Label
+        {
+            Undefined, AllBlack, AllWhite, LeftBlack, LeftWhite, SlashBlack, SlashWhite, TopBlack, TopWhite
+        }
 
-    public class FourPixCamSampleSet : SampleSet
-    {
-        #region ctor & fields
-
-        Random rnd;
-        Dictionary<Label, IMatrix> rawInputs, validInputs, validOutputs;
-        Sample[] validSamples, allSamples;
-
-        public FourPixCamSampleSet(SetName setName) : base(setName) { }
-        public FourPixCamSampleSet(SampleSetParameters set) : base(set) { }
-
-        #endregion
-
-        #region SampleSet
+        #region CreateSamples
 
         protected override Sample[] CreateSamples(int trainingSamplesCount, float inputDistortion, float targetTolerance)
         {
             rnd = RandomProvider.GetThreadRandom();
             Sample.Tolerance = targetTolerance;
 
-            rawInputs = GetRawInputs();
-            validInputs = GetValidInputs(rawInputs);
-            validOutputs = GetValidOutputs();
-            validSamples = GetValidSamples();
-            allSamples = GetMultipliedSamples(validSamples, trainingSamplesCount, inputDistortion);
+            Dictionary<Label, IMatrix> rawInputs = GetRawInputs();
+            Dictionary<Label, IMatrix> validInputs = GetValidInputs(rawInputs);
+            Dictionary<Label, IMatrix> validOutputs = GetValidOutputs();
+            Sample[] validSamples = GetValidSamples(rawInputs, validInputs, validOutputs);
+            Sample[] allSamples = GetMultipliedSamples(rawInputs, validSamples, trainingSamplesCount, inputDistortion);
             DistortSamples(allSamples, inputDistortion);
 
-            // debug
-            //allSamples[0].RawInput = new Matrix(new float[,] {
-            //        { -1, -1 },
-            //        { -1, -1 } });
-            //allSamples[0].Input[0] = -.85f;
-            //allSamples[0].Input[1] = -.95f;
-            //allSamples[0].Input[2] = -.89f;
-            //allSamples[0].Input[3] = -.90f;
-            //allSamples[0].ExpectedOutput[0] = 1;
-            //allSamples[0].ExpectedOutput[1] = 0;
-            //allSamples[0].ExpectedOutput[2] = 0;
-            //allSamples[0].ExpectedOutput[3] = 0;
-            //allSamples[0].Label = Label.AllBlack;
-
             return allSamples;
-        }
-        protected override Sample[] ConvertToSamples(FileStream fs_labels, FileStream fs_imgs)
-        {
-            throw new NotImplementedException();
         }
 
         #region helpers
@@ -125,7 +96,7 @@ namespace DeepLearningDataProvider.FourPixCam
                 [Label.SlashBlack] = new Matrix(new float[] { 0, 0, 0, 1 })
             };
         }
-        Sample[] GetValidSamples()
+        Sample[] GetValidSamples(Dictionary<Label, IMatrix> rawInputs, Dictionary<Label, IMatrix> validInputs, Dictionary<Label, IMatrix> validOutputs)
         {
             var result = new List<Sample>();
 
@@ -143,14 +114,14 @@ namespace DeepLearningDataProvider.FourPixCam
 
             return result.ToArray();
         }
-        Sample[] GetMultipliedSamples(Sample[] _validSamples, int sampleSize, float inputDistortion)
+        Sample[] GetMultipliedSamples(Dictionary<Label, IMatrix> rawInputs, Sample[] _validSamples, int sampleSize, float inputDistortion)
         {
-            List<Sample> resultList = new List<Sample>();
+            List<Sample> result = new List<Sample>();
             int multiplicationFactor = (int)Math.Round((double)sampleSize / rawInputs.Values.Count, 0);
 
             for (int i = 0; i < multiplicationFactor; i++)
             {
-                resultList.AddRange(_validSamples.Select((x, index) => new Sample()
+                result.AddRange(_validSamples.Select((x, index) => new Sample()
                 {
                     Id = _validSamples.Length * i + index,
                     Label = x.Label,
@@ -160,14 +131,7 @@ namespace DeepLearningDataProvider.FourPixCam
                 }));
             }
 
-            // debug
-            var idTest_List = resultList.GroupBy(x => x.Id);
-            bool hm = idTest_List.All(y => y.Count() == 1);
-
-            var resultArray = resultList.Shuffle().ToArray();
-            var idTest_Array = resultArray.GroupBy(x => x.Id);
-            bool hm2 = idTest_Array.All(y => y.Count() == 1);
-            return resultArray;
+            return result.ToArray();
         }
         void DistortSamples(Sample[] samples, float inputDistortion)
         {
@@ -175,12 +139,28 @@ namespace DeepLearningDataProvider.FourPixCam
         }
         float GetDistortedValue(float value, float inputDistortion)
         {
-            double test = value * (1f - rnd.NextDouble() * inputDistortion);
-            // float result = (float)Math.Round(test, 2);
-            return (float)test;
+            return (float)(value * (1f - rnd.NextDouble() * inputDistortion));
         }
 
         #endregion
+
+        #endregion
+
+        #region ConvertFilesToSamples
+
+        protected override Sample[] ConvertFilesToSamples(FileStream fs_labels, FileStream fs_imgs)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region CreateDefaultSampleSet
+
+        internal override Task<ISampleSet> CreateDefaultSampleSetAsync(SetName setName)
+        {
+            throw new NotImplementedException();
+        }
 
         #endregion
     }

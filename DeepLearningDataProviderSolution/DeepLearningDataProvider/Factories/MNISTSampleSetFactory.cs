@@ -1,28 +1,35 @@
 ﻿using MatrixHelper;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
-namespace DeepLearningDataProvider.MNIST
+namespace DeepLearningDataProvider.Factories
 {
-    public class MNISTSampleSet : SampleSet
+    public class MNISTImage
     {
-        #region ctor & fields
+        public byte Label { get; set; }
+        public byte[] Data { get; set; }
+        public int Height { get; set; }
+        public int Width { get; set; }
+    }
 
-        public MNISTSampleSet(SetName setName) : base(setName) { }
-        public MNISTSampleSet(SampleSetParameters set) : base(set) { }
-
-        #endregion
-
-        #region BaseDataFactory
+    public class MNISTSampleSetFactory : SampleSetFactoryBase
+    {
+        #region CreateSamples
 
         protected override Sample[] CreateSamples(int samples, float inputDistortion, float targetTolerance)
         {
             throw new NotImplementedException();
         }
-        protected override Sample[] ConvertToSamples(FileStream fs_labels, FileStream fs_imgs)
+
+        #endregion
+
+        #region ConvertFilesToSamples
+
+        protected override Sample[] ConvertFilesToSamples(FileStream fs_labels, FileStream fs_imgs)
         {
             {
-                Image[] imgs = GetImages(fs_labels, fs_imgs);
+                MNISTImage[] imgs = GetImages(fs_labels, fs_imgs);
                 Sample[] result = new Sample[imgs.Length];
 
                 for (int i = 0; i < imgs.Length; i++)
@@ -39,14 +46,12 @@ namespace DeepLearningDataProvider.MNIST
             }
         }
 
-        #endregion
-
-        #region (child class dedicated) helpers 
+        #region helpers 
 
         /// <summary>
         /// Convert Stream to (MNIST) Image format.
         /// </summary>
-        Image[] GetImages(FileStream labelsStream, FileStream imagesStream)
+        MNISTImage[] GetImages(FileStream labelsStream, FileStream imagesStream)
         {
             BinaryReader labels = new BinaryReader(labelsStream);
 
@@ -63,13 +68,13 @@ namespace DeepLearningDataProvider.MNIST
             int height = images.ReadBigInt32();
 
             // Get content
-            Image[] result = new Image[numberOfImages];
+            MNISTImage[] result = new MNISTImage[numberOfImages];
 
             for (int i = 0; i < numberOfImages; i++)
             {
-                result[i] = new Image
+                result[i] = new MNISTImage
                 {
-                    Data = images.ReadBytes(width*height),
+                    Data = images.ReadBytes(width * height),
                     Label = labels.ReadByte(),
                     Width = width,
                     Height = height
@@ -78,11 +83,10 @@ namespace DeepLearningDataProvider.MNIST
 
             return result;
         }
-
         /// <summary>
         /// 'Convert' Image.Label to Matrix
         /// </summary>
-        Matrix GetExpectedOutput(Image[] imgs, int i)
+        Matrix GetExpectedOutput(MNISTImage[] imgs, int i)
         {
             Matrix expectedOutput = new Matrix(10);
             expectedOutput[imgs[i].Label] = 1;
@@ -91,7 +95,7 @@ namespace DeepLearningDataProvider.MNIST
         /// <summary>
         /// 'Convert' Image.Data to Matrix
         /// </summary>
-        Matrix GetInput(Image[] imgs, int i)
+        Matrix GetInput(MNISTImage[] imgs, int i)
         {
             float[] dataAsFloatArray = Array.ConvertAll(imgs[i].Data, x => (float)x);
             Matrix input = new Matrix(dataAsFloatArray);
@@ -100,7 +104,7 @@ namespace DeepLearningDataProvider.MNIST
         /// <summary>
         /// 'Convert' Image.Data to two-dimensional Matrix
         /// </summary>
-        Matrix GetRawInput(Image[] imgs, int i)
+        Matrix GetRawInput(MNISTImage[] imgs, int i)
         {
             Matrix rawData = new Matrix(imgs[i].Height, imgs[i].Width);
             for (int j = 0; j < rawData.m; j++)
@@ -112,6 +116,22 @@ namespace DeepLearningDataProvider.MNIST
             }
 
             return rawData;
+        }
+
+        internal ISampleSet CreateDefaultSampleSetAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #endregion
+
+        #region CreateDefaultSampleSet
+
+        internal override Task<ISampleSet> CreateDefaultSampleSetAsync(SetName setName)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

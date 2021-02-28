@@ -1,11 +1,11 @@
 ﻿using MatrixHelper;
-using DeepLearningDataProvider.FourPixCam;
 using System;
+using static DeepLearningDataProvider.Factories.FourPixCamSampleSetFactory;
 
 namespace DeepLearningDataProvider
 {
     [Serializable]
-    public class Sample //: ILoggable// : ISample
+    public class Sample
     {
         #region fields
 
@@ -19,7 +19,7 @@ namespace DeepLearningDataProvider
 
         public static float Tolerance { get; set; } = 0;
         public int Id { get; internal set; }
-        public Label Label { get; set; }
+        public Label Label { get; set; }    // FourPixCam dedicated so far..
         public IMatrix RawInput { get; set; }
         public IMatrix Input { get; set; }
         public IMatrix ExpectedOutput { get; set; }
@@ -61,16 +61,6 @@ namespace DeepLearningDataProvider
             }
             return true;
         }
-
-        #endregion
-
-        #region ILoggable
-
-        //public string LoggableName => $"Sample {Id}";
-        //public string ToLog()
-        //{
-        //    throw new NotImplementedException();
-        //}
 
         #endregion
     }

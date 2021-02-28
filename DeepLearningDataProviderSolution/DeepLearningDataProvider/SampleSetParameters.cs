@@ -2,13 +2,27 @@
 
 namespace DeepLearningDataProvider
 {
-    public class SampleSetParameters
+    public interface ISampleSetParameters
+    {
+        float InputDistortion { get; set; }
+        SetName Name { get; set; }
+        Dictionary<SampleType, string> Paths { get; set; }
+        float TargetTolerance { get; set; }
+        int TestingSamples { get; set; }
+        int TrainingSamples { get; set; }
+        bool UseAllAvailableTestingSamples { get; set; }
+        bool UseAllAvailableTrainingSamples { get; set; }
+
+        // string ToString();
+    }
+
+    public class SampleSetParameters : ISampleSetParameters
     {
         #region ctor & fields
 
-        public SampleSetParameters(SetName name)
+        public SampleSetParameters()//SetName name
         {
-            Name = name;
+            // Name = name;
             Paths = new Dictionary<SampleType, string>();
         }
 

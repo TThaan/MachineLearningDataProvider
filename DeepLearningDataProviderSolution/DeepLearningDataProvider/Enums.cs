@@ -4,7 +4,7 @@
     {
         Undefined, ByteArray, Idx3ubyte, Json
     }
-    public enum SetName //ProviderName?TemplateName?
+    public enum SetName
     {
         FourPixelCamera, MNIST,
         Custom
