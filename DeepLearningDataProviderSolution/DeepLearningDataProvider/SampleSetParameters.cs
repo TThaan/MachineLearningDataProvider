@@ -8,6 +8,8 @@ namespace DeepLearningDataProvider
         SetName Name { get; set; }
         Dictionary<SampleType, string> Paths { get; set; }
         float TargetTolerance { get; set; }
+        int DefaultTestingSamples { get; set; }
+        int DefaultTrainingSamples { get; set; }
         int TestingSamples { get; set; }
         int TrainingSamples { get; set; }
         bool UseAllAvailableTestingSamples { get; set; }
@@ -32,6 +34,8 @@ namespace DeepLearningDataProvider
 
         public SetName Name { get; set; }
         public Dictionary<SampleType, string> Paths { get; set; }
+        public int DefaultTestingSamples { get; set; }
+        public int DefaultTrainingSamples { get; set; }
         public int TrainingSamples { get; set; }
         public int TestingSamples { get; set; }
         public bool UseAllAvailableTrainingSamples { get; set; } = true;
