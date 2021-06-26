@@ -21,26 +21,25 @@ namespace DeepLearningDataProvider.Factories
 
         protected Random rnd;
 
-        private string status, defaultPath = Path.GetTempPath();
-        private int statusDisplayDuration = 1000; // variable
+        private string message, defaultPath = Path.GetTempPath();
+        private int statusDisplayDuration = 1; //000 variable
 
         #endregion
 
         #region internal members
 
-        internal string Status
+        internal string Message
         {
-            get { return status; }
+            get { return message; }
             set
             {
-                if (status != value)
+                if (message != value)
                 {
-                    status = value;
+                    message = value;
                     OnPropertyChanged();
                 };
             }
         }
-        // Refactor..
         internal async Task<ISampleSet> CreateSampleSetAsync(ISampleSetParameters parameters)
         {
             return await Task.Run(() =>
@@ -49,13 +48,13 @@ namespace DeepLearningDataProvider.Factories
 
                 // If not all entered paths exist locally
 
-                Status = $"Trying to get samples locally. (Given adresses interpreted as local path.)";
+                Message = $"Trying to get samples locally.\n(Given adresses interpreted as local path.)";
                 Thread.Sleep(statusDisplayDuration);
 
                 if (parameters.Paths == null || parameters.Paths.Count == 0 ||
                 parameters.Paths.Values.Any(x => !File.Exists(x)))
                 {
-                    Status = $"Failed to get samples locally under the given adresses. Trying default paths and file names.";
+                    Message = $"Failed to get samples locally under the given adresses.\nTrying default paths and file names.";
                     Thread.Sleep(statusDisplayDuration);
 
                     // but all files are already in the default path
@@ -64,7 +63,7 @@ namespace DeepLearningDataProvider.Factories
                         .All(x => File.Exists(defaultPath + x.ToString() + parameters.Name)))
                     {
 
-                        Status = $"Found samples under default paths and file names.";
+                        Message = $"Found samples under default paths and file names.";
                         Thread.Sleep(statusDisplayDuration);
 
                         // Exchange the entered paths/url with the default ones.
@@ -80,13 +79,13 @@ namespace DeepLearningDataProvider.Factories
 
                         try
                         {
-                            Status = $"Trying to get samples online. (Given adresses interpreted as urls.)";
+                            Message = $"Trying to get samples online. (Given adresses interpreted as urls.)";
                             Thread.Sleep(statusDisplayDuration);
 
                             Enum.GetValues(typeof(SampleType))
                                 .ForEach<SampleType>(x => parameters.Paths[x] = GetFileFromUrl(parameters, x));
 
-                            Status = $"Found samples online.";
+                            Message = $"Found samples online.";
                             Thread.Sleep(statusDisplayDuration);
                         }
 
@@ -94,14 +93,14 @@ namespace DeepLearningDataProvider.Factories
 
                         catch (Exception)
                         {
-                            Status = $"Failed to get samples online. Trying to create samples.";
+                            Message = $"Failed to get samples online.\nTrying to create samples.";
                             Thread.Sleep(statusDisplayDuration);
 
                             result.TrainingSamples = CreateSamples(parameters.TrainingSamples, parameters.InputDistortion, parameters.TargetTolerance);
                             result.TestingSamples = CreateSamples(parameters.TestingSamples, parameters.InputDistortion, parameters.TargetTolerance);
 
 
-                            Status = $"Samples created by creator.";
+                            Message = $"Samples created by creator.";
                             Thread.Sleep(statusDisplayDuration);
                             return result;
                         }
@@ -109,7 +108,7 @@ namespace DeepLearningDataProvider.Factories
                 }
                 else
                 {
-                    Status = $"Found samples under the given paths and file names.";
+                    Message = $"Found samples under the given paths and file names.";
                     Thread.Sleep(statusDisplayDuration);
                 }
                 // Get samples from local path.
@@ -122,7 +121,7 @@ namespace DeepLearningDataProvider.Factories
                 result.TrainingSamples = ConvertFilesToSamples(fs_trainLabels, fs_trainData);
                 result.TestingSamples = ConvertFilesToSamples(fs_testLabels, fs_testData);
 
-                Status = $"Success. Samples received.";
+                Message = $"Success. Samples received.";
                 Thread.Sleep(statusDisplayDuration);
 
                 return result;

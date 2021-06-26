@@ -17,7 +17,7 @@ namespace DeepLearningDataProvider
         IEnumerable<SampleType> Types { get; }
         Task<ISampleSet> CreateSampleSetAsync(ISampleSetParameters sampleSetParameters);
         Task<ISampleSet> CreateDefaultSampleSetAsync(SetName setName);
-        string Status { get; }
+        string Message { get; }
         PropertyChangedEventHandler[] EventHandlers { get; set; }
     }
 
@@ -26,7 +26,7 @@ namespace DeepLearningDataProvider
     /// </summary>
     public class SampleSetSteward : ISampleSetSteward
     {
-        #region fields & ctor
+        #region fields
 
         Dictionary<SetName, ISampleSetParameters> defaultSampleSetParameters;
         IEnumerable<SampleType> types;
@@ -58,7 +58,7 @@ namespace DeepLearningDataProvider
             return SampleSet = await factory.CreateDefaultSampleSetAsync(setName);
         }
         public PropertyChangedEventHandler[] EventHandlers { get; set; }
-        public string Status => factory?.Status;
+        public string Message => factory?.Message;
 
         #region helpers
 
@@ -76,7 +76,7 @@ namespace DeepLearningDataProvider
                 default:
                     throw new ArgumentException($"Couldn't find a fitting SampleSet to the given SetName {setName}.");
             }
-            EventHandlers.ForEach<PropertyChangedEventHandler>(x => result.PropertyChanged += x);
+            EventHandlers?.ForEach<PropertyChangedEventHandler>(x => result.PropertyChanged += x);
             return result;
         }
         private Dictionary<SetName, ISampleSetParameters> GetDefaultSampleSetParameters()

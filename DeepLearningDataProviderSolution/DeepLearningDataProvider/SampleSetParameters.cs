@@ -14,17 +14,14 @@ namespace DeepLearningDataProvider
         int TrainingSamples { get; set; }
         bool UseAllAvailableTestingSamples { get; set; }
         bool UseAllAvailableTrainingSamples { get; set; }
-
-        // string ToString();
     }
 
     public class SampleSetParameters : ISampleSetParameters
     {
         #region ctor & fields
 
-        public SampleSetParameters()//SetName name
+        public SampleSetParameters()
         {
-            // Name = name;
             Paths = new Dictionary<SampleType, string>();
         }
 
