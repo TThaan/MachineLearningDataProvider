@@ -1,4 +1,6 @@
-﻿using MatrixHelper;
+﻿using DeepLearningDataProvider.JsonConverters;
+using MatrixExtensions;
+using Newtonsoft.Json;
 using System;
 using static DeepLearningDataProvider.Factories.FourPixCamSampleSetFactory;
 
@@ -7,6 +9,12 @@ namespace DeepLearningDataProvider
     [Serializable]
     public class Sample
     {
+        //[JsonConstructor]
+        //public Sample()
+        //{
+
+        //}
+
         #region fields
 
         // bool isOutputCorrect;
@@ -20,9 +28,13 @@ namespace DeepLearningDataProvider
         public static float Tolerance { get; set; } = 0;
         public int Id { get; internal set; }
         public Label Label { get; set; }    // FourPixCam dedicated so far..
-        public IMatrix RawInput { get; set; }
-        public IMatrix Input { get; set; }
-        public IMatrix ExpectedOutput { get; set; }
+        //[JsonConverter(typeof(GenericJsonConverter<float[]>))]
+        //[JsonProperty(ItemConverterType = typeof(GenericJsonConverter<float>))]
+        public dynamic RawInput { get; set; }
+        //[JsonConverter(typeof(GenericJsonConverter<float[]>))]
+        public float[] Input { get; set; }
+        //[JsonConverter(typeof(GenericJsonConverter<float[]>))]
+        public float[] ExpectedOutput { get; set; }
 
         //[JsonIgnore]
         //public IMatrix ActualOutput 
@@ -44,11 +56,14 @@ namespace DeepLearningDataProvider
 
         #region helpers
 
-        public bool IsOutputApproximatelyCorrect(IMatrix actualOutput)
+        public bool IsOutputApproximatelyCorrect(float[] actualOutput)
         {
-            if (actualOutput.m == ExpectedOutput.m && actualOutput.n == 1 && ExpectedOutput.n == 1)
+            int a = actualOutput.Length;
+            int b = actualOutput.Length;
+
+            if (a == b)
             {
-                for (int j = 0; j < actualOutput.m; j++)
+                for (int j = 0; j < b; j++)
                 {
                     var a_j = actualOutput[j];
                     var t_j = ExpectedOutput[j];

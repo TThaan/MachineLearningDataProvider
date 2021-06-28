@@ -18,6 +18,7 @@ namespace DeepLearningDataProvider.JsonConverters
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
+            //serializer.TypeNameHandling = TypeNameHandling.All;
             serializer.Serialize(writer, value);
         }
     }

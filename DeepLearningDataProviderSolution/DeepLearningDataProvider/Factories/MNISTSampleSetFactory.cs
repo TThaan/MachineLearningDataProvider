@@ -1,6 +1,6 @@
-﻿using MatrixHelper;
-using System;
+﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DeepLearningDataProvider.Factories
@@ -86,32 +86,35 @@ namespace DeepLearningDataProvider.Factories
         /// <summary>
         /// 'Convert' Image.Label to Matrix
         /// </summary>
-        Matrix GetExpectedOutput(MNISTImage[] imgs, int i)
+        float[] GetExpectedOutput(MNISTImage[] imgs, int i)
         {
-            Matrix expectedOutput = new Matrix(10);
+            float[] expectedOutput = new float[10];
             expectedOutput[imgs[i].Label] = 1;
             return expectedOutput;
         }
         /// <summary>
         /// 'Convert' Image.Data to Matrix
         /// </summary>
-        Matrix GetInput(MNISTImage[] imgs, int i)
+        float[] GetInput(MNISTImage[] imgs, int i)
         {
             float[] dataAsFloatArray = Array.ConvertAll(imgs[i].Data, x => (float)x);
-            Matrix input = new Matrix(dataAsFloatArray);
+            float[] input = dataAsFloatArray.ToArray();
             return input;
         }
         /// <summary>
         /// 'Convert' Image.Data to two-dimensional Matrix
         /// </summary>
-        Matrix GetRawInput(MNISTImage[] imgs, int i)
+        float[,] GetRawInput(MNISTImage[] imgs, int i)
         {
-            Matrix rawData = new Matrix(imgs[i].Height, imgs[i].Width);
-            for (int j = 0; j < rawData.m; j++)
+            float[,] rawData = new float[imgs[i].Height, imgs[i].Width];
+            int a = rawData.GetLength(0);
+            int b = rawData.GetLength(1);
+
+            for (int j = 0; j < a; j++)
             {
-                for (int k = 0; k < rawData.n; k++)
+                for (int k = 0; k < b; k++)
                 {
-                    rawData[j, k] = imgs[i].Data[j * rawData.n + k];
+                    rawData[j, k] = imgs[i].Data[j * b + k];
                 }
             }
 

@@ -1,4 +1,4 @@
-﻿using MatrixHelper;
+﻿using MatrixExtensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,9 +21,9 @@ namespace DeepLearningDataProvider.Factories
             rnd = RandomProvider.GetThreadRandom();
             Sample.Tolerance = targetTolerance;
 
-            Dictionary<Label, IMatrix> rawInputs = GetRawInputs();
-            Dictionary<Label, IMatrix> validInputs = GetValidInputs(rawInputs);
-            Dictionary<Label, IMatrix> validOutputs = GetValidOutputs();
+            Dictionary<Label, float[,]> rawInputs = GetRawInputs();
+            Dictionary<Label, float[]> validInputs = GetValidInputs(rawInputs);
+            Dictionary<Label, float[]> validOutputs = GetValidOutputs();
             Sample[] validSamples = GetValidSamples(rawInputs, validInputs, validOutputs);
             Sample[] allSamples = GetMultipliedSamples(rawInputs, validSamples, trainingSamplesCount, inputDistortion);
             DistortSamples(allSamples, inputDistortion);
@@ -34,69 +34,72 @@ namespace DeepLearningDataProvider.Factories
         #region helpers
 
         // Actually: To be defined as object in Sample!
-        Dictionary<Label, IMatrix> GetRawInputs()
+        Dictionary<Label, float[,]> GetRawInputs()
         {
-            return new Dictionary<Label, IMatrix>
+            return new Dictionary<Label, float[,]>
             {
-                [Label.AllBlack] = new Matrix(new float[,] {
+                [Label.AllBlack] = new float[,] {
                     { -1, -1 },
-                    { -1, -1 } }),
+                    { -1, -1 } },
 
-                [Label.AllWhite] = new Matrix(new float[,] {
+                [Label.AllWhite] = new float[,] {
                     { 1, 1 },
-                    { 1, 1 } }),
+                    { 1, 1 } },
 
-                [Label.TopBlack] = new Matrix(new float[,] {
+                [Label.TopBlack] = new float[,] {
                     { -1, -1 },
-                    { 1, 1 } }),
+                    { 1, 1 } },
 
-                [Label.TopWhite] = new Matrix(new float[,] {
+                [Label.TopWhite] = new float[,] {
                     { 1, 1 },
-                    { -1, -1 } }),
+                    { -1, -1 } },
 
-                [Label.LeftBlack] = new Matrix(new float[,] {
+                [Label.LeftBlack] = new float[,] {
                     { -1, 1 },
-                    { -1, 1 } }),
+                    { -1, 1 } },
 
-                [Label.LeftWhite] = new Matrix(new float[,] {
+                [Label.LeftWhite] = new float[,] {
                     { 1, -1 },
-                    { 1, -1 } }),
+                    { 1, -1 } },
 
-                [Label.SlashBlack] = new Matrix(new float[,] {
+                [Label.SlashBlack] = new float[,] {
                     { 1, -1 },
-                    { -1, 1 } }),
+                    { -1, 1 } },
 
-                [Label.SlashWhite] = new Matrix(new float[,] {
+                [Label.SlashWhite] = new float[,] {
                     { -1, 1 },
-                    { 1, -1 } })
+                    { 1, -1 } }
             };
         }
-        Dictionary<Label, IMatrix> GetValidInputs(Dictionary<Label, IMatrix> _rawInputs)
+        /// <summary>
+        /// Flattening two-dimensional raw input into one dimensional input.
+        /// </summary>
+        Dictionary<Label, float[]> GetValidInputs(Dictionary<Label, float[,]> _rawInputs)
         {
-            return _rawInputs.ToDictionary(x => x.Key, x => Operations.FlattenToOneColumn(x.Value));
+            return _rawInputs.ToDictionary(x => x.Key, x => x.Value.ToList<float>().ToArray());
         }
-        Dictionary<Label, IMatrix> GetValidOutputs()
+        Dictionary<Label, float[]> GetValidOutputs()
         {
-            return new Dictionary<Label, IMatrix>
+            return new Dictionary<Label, float[]>
             {
-                [Label.AllWhite] = new Matrix(new float[] { 1, 0, 0, 0 }),
+                [Label.AllWhite] = new float[] { 1, 0, 0, 0 },
 
-                [Label.AllBlack] = new Matrix(new float[] { 1, 0, 0, 0 }),
+                [Label.AllBlack] = new float[] { 1, 0, 0, 0 },
 
-                [Label.TopWhite] = new Matrix(new float[] { 0, 1, 0, 0 }),
+                [Label.TopWhite] = new float[] { 0, 1, 0, 0 },
 
-                [Label.TopBlack] = new Matrix(new float[] { 0, 1, 0, 0 }),
+                [Label.TopBlack] = new float[] { 0, 1, 0, 0 },
 
-                [Label.LeftWhite] = new Matrix(new float[] { 0, 0, 1, 0 }),
+                [Label.LeftWhite] = new float[] { 0, 0, 1, 0 },
 
-                [Label.LeftBlack] = new Matrix(new float[] { 0, 0, 1, 0 }),
+                [Label.LeftBlack] = new float[] { 0, 0, 1, 0 },
 
-                [Label.SlashWhite] = new Matrix(new float[] { 0, 0, 0, 1 }),
+                [Label.SlashWhite] = new float[] { 0, 0, 0, 1 },
 
-                [Label.SlashBlack] = new Matrix(new float[] { 0, 0, 0, 1 })
+                [Label.SlashBlack] = new float[] { 0, 0, 0, 1 }
             };
         }
-        Sample[] GetValidSamples(Dictionary<Label, IMatrix> rawInputs, Dictionary<Label, IMatrix> validInputs, Dictionary<Label, IMatrix> validOutputs)
+        Sample[] GetValidSamples(Dictionary<Label, float[,]> rawInputs, Dictionary<Label, float[]> validInputs, Dictionary<Label, float[]> validOutputs)
         {
             var result = new List<Sample>();
 
@@ -114,7 +117,7 @@ namespace DeepLearningDataProvider.Factories
 
             return result.ToArray();
         }
-        Sample[] GetMultipliedSamples(Dictionary<Label, IMatrix> rawInputs, Sample[] _validSamples, int sampleSize, float inputDistortion)
+        Sample[] GetMultipliedSamples(Dictionary<Label, float[,]> rawInputs, Sample[] _validSamples, int sampleSize, float inputDistortion)
         {
             List<Sample> result = new List<Sample>();
             int multiplicationFactor = (int)Math.Round((double)sampleSize / rawInputs.Values.Count, 0);
@@ -125,9 +128,9 @@ namespace DeepLearningDataProvider.Factories
                 {
                     Id = _validSamples.Length * i + index,
                     Label = x.Label,
-                    RawInput = new Matrix(x.RawInput, "Sample.RawInput"),
-                    Input = new Matrix(x.Input, "Sample.Input"),
-                    ExpectedOutput = new Matrix(x.ExpectedOutput, "Sample.Output"),
+                    RawInput = x.RawInput.ToArray(),    // ToArray should make a copy.. else use CopyTo().
+                    Input = x.Input.ToArray(),    // ToArray should make a copy.. else use CopyTo().
+                    ExpectedOutput = x.ExpectedOutput.ToArray(),    // ToArray should make a copy.. else use CopyTo().
                 }));
             }
 
