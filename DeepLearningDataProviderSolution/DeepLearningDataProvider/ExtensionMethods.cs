@@ -10,14 +10,7 @@ namespace DeepLearningDataProvider
     {
         internal static List<T> ToList<T>(this Array arr)
         {
-            var result = new List<T>();
-
-            for (int i = 0; i < arr.Length; i++)
-            {
-                result.Add((T)arr.GetValue(i));
-            }
-
-            return result;
+            return arr.Cast<T>().ToList();
         }
         internal static void ForEach<T>(this Array source, Action<T> action)
         {

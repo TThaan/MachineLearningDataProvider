@@ -15,12 +15,12 @@ namespace DeepLearningDataProvider
     //[JsonObject()]
     public class SampleSet : ISampleSet
     {
-        public SampleSetParameters Parameters { get; set; }
-        //[JsonConverter(typeof(JsonConverter_Array<Sample>))]
-        [JsonProperty(ItemConverterType = typeof(GenericJsonConverter<Sample>))]
-        public Sample[] TrainingSamples { get; set; }
+        public SampleSetParameters Parameters { get; set; } // ISampleSetParameters?
         //[JsonConverter(typeof(JsonConverter_Array<Sample>))]
         //[JsonProperty(ItemConverterType = typeof(GenericJsonConverter<Sample>))]
-        public Sample[] TestingSamples { get; set; }
+        public Sample[] TrainingSamples { get; set; }   // ISample?
+        //[JsonConverter(typeof(JsonConverter_Array<Sample>))]
+        //[JsonProperty(ItemConverterType = typeof(GenericJsonConverter<Sample>))]
+        public Sample[] TestingSamples { get; set; }    // ISample?
     }
 }

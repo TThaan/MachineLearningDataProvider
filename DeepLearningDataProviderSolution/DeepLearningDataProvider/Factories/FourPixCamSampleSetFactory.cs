@@ -128,9 +128,9 @@ namespace DeepLearningDataProvider.Factories
                 {
                     Id = _validSamples.Length * i + index,
                     Label = x.Label,
-                    RawInput = x.RawInput.ToArray(),    // ToArray should make a copy.. else use CopyTo().
-                    Input = x.Input.ToArray(),    // ToArray should make a copy.. else use CopyTo().
-                    ExpectedOutput = x.ExpectedOutput.ToArray(),    // ToArray should make a copy.. else use CopyTo().
+                    RawInput = ((float[,])x.RawInput).GetCopy(),
+                    Input = x.Input.GetCopy(),
+                    ExpectedOutput = x.ExpectedOutput.GetCopy(),
                 }));
             }
 
