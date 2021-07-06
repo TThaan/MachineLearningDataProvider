@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System.Collections.Generic;
 
 namespace DeepLearningDataProvider
 {
@@ -8,12 +10,10 @@ namespace DeepLearningDataProvider
         SetName Name { get; set; }
         Dictionary<SampleType, string> Paths { get; set; }
         float TargetTolerance { get; set; }
-        int DefaultTestingSamples { get; set; }
-        int DefaultTrainingSamples { get; set; }
         int TestingSamples { get; set; }
         int TrainingSamples { get; set; }
-        bool UseAllAvailableTestingSamples { get; set; }
-        bool UseAllAvailableTrainingSamples { get; set; }
+        int AllTestingSamples { get; set; }
+        int AllTrainingSamples { get; set; }
     }
 
     public class SampleSetParameters : ISampleSetParameters
@@ -29,14 +29,13 @@ namespace DeepLearningDataProvider
 
         #region public
 
+        [JsonConverter(typeof(StringEnumConverter))]
         public SetName Name { get; set; }
         public Dictionary<SampleType, string> Paths { get; set; }
-        public int DefaultTestingSamples { get; set; }
-        public int DefaultTrainingSamples { get; set; }
+        public int AllTestingSamples { get; set; }
+        public int AllTrainingSamples { get; set; }
         public int TrainingSamples { get; set; }
         public int TestingSamples { get; set; }
-        public bool UseAllAvailableTrainingSamples { get; set; } = true;
-        public bool UseAllAvailableTestingSamples { get; set; } = true;
         public float InputDistortion { get; set; }
         public float TargetTolerance { get; set; }
 

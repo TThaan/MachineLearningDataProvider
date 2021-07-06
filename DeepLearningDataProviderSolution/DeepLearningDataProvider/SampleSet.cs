@@ -6,7 +6,7 @@ namespace DeepLearningDataProvider
 {
     public interface ISampleSet
     {
-        SampleSetParameters Parameters { get; set; }
+        ISampleSetParameters Parameters { get; set; }
         Sample[] TestingSamples { get; set; }
         Sample[] TrainingSamples { get; set; }
     }
@@ -15,7 +15,7 @@ namespace DeepLearningDataProvider
     //[JsonObject()]
     public class SampleSet : ISampleSet
     {
-        public SampleSetParameters Parameters { get; set; } // ISampleSetParameters?
+        public ISampleSetParameters Parameters { get; set; } // ISampleSetParameters?
         //[JsonConverter(typeof(JsonConverter_Array<Sample>))]
         //[JsonProperty(ItemConverterType = typeof(GenericJsonConverter<Sample>))]
         public Sample[] TrainingSamples { get; set; }   // ISample?

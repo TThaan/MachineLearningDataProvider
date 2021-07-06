@@ -81,6 +81,35 @@ namespace DeepLearningDataProvider
                     return false;
             }
         }
+        /// <summary>
+        /// Supports following enums: SetName
+        /// Other types will cause an exception throw.
+        /// </summary>
+        public static TEnum ToEnum<TEnum>(this string enumAsString, bool throwExceptionOnWrongParameter = true)
+        {
+            TEnum result = default;
+
+            // Do I really need to restrict enum types?
+            Type enumType = typeof(TEnum);
+            if (
+                enumType != typeof(SetName))
+                throw new ArgumentException($"ToEnum(..) does not support type {enumType.Name}. \nSo far it only supports the following enums: ActivationType, WeightInitType, CostType");
+
+            var names = Enum.GetNames(enumType);
+            var values = Enum.GetValues(enumType);
+            int length = names.Length;
+
+            for (int i = 0; i < length; i++)
+            {
+                if (names[i] == enumAsString)
+                    result = (TEnum)values.GetValue(i);
+
+                if (i == length - 1 && throwExceptionOnWrongParameter)
+                    throw new ArgumentException($"{enumType.Name}.{enumAsString} does not exist.");
+            }
+
+            return result;
+        }
 
         #region https://stackoverflow.com/a/49407977
 
