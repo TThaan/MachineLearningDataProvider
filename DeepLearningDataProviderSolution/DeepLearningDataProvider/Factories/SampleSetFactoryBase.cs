@@ -127,7 +127,7 @@ namespace DeepLearningDataProvider.Factories
                 return result;
             });
         }
-        internal abstract Task<ISampleSet> CreateDefaultSampleSetAsync(SetName setName);
+        //internal abstract Task<ISampleSet> CreateDefaultSampleSetAsync(SetName setName);
 
         #region helpers
 

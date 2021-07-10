@@ -22,7 +22,6 @@ namespace DeepLearningDataProvider.Builders
 
         #endregion
 
-        public IEnumerable<SetName> DefaultParameters => new SampleSetSteward().DefaultParameters.Keys;
         public ISampleSetParameters Parameters
         {
             get
@@ -46,7 +45,7 @@ namespace DeepLearningDataProvider.Builders
                 switch (parameterName)
                 {
                     case nameof(Parameters.Name):
-                        SetSampleSetName(parameterValue.ToEnum<SetName>());
+                        SetSampleSetName(parameterValue);
                         break;
                     case nameof(Parameters.TestingSamples):
                         SetAmountOfTestingSamples(int.Parse(parameterValue));
@@ -65,7 +64,7 @@ namespace DeepLearningDataProvider.Builders
             catch (Exception e) { _onDataProviderChanged(e.Message); }
         }
 
-        public bool SetSampleSetName(SetName name)
+        public bool SetSampleSetName(string name)
         {
             try
             {
@@ -151,39 +150,19 @@ namespace DeepLearningDataProvider.Builders
 
         #region methods: Create, Load & Save
 
-        public bool CreateSampleSetParameters(string templateName)
+        public void CreateSampleSetParameters()
         {
-            if (templateName == null)
-                templateName = "FourPixelCamera";
-
-            SetName name = SetName.Custom;
-
-            switch (templateName)
-            {
-                case "FourPixelCamera":
-                    name = SetName.FourPixelCamera;
-                    break;
-                case "MNIST":
-                    name = SetName.MNIST;
-                    break;
-            }
-            if (name == SetName.Custom)
-            {
-                _onDataProviderChanged($"Template name {templateName} is unavailable.");
-                return false;
-            }
-
-            Parameters = new SampleSetSteward().DefaultParameters[name];
+            Parameters = new SampleSetParameters();
             _onDataProviderChanged("Sample set parameters created.");
-            return true;
         }
         public async Task<bool> LoadSampleSetParametersAsync()
         {
-            if (_pathBuilder.SampleSetParameters == default)
-            {
-                _onDataProviderChanged("No path to sample set parameters is set.");
-                return false;
-            }
+            // Redundant due to next try block? (vgl: 'SaveSampleSetParametersAsync()')
+            //if (_pathBuilder.SampleSetParameters == default || !File.Exists(_pathBuilder.SampleSetParameters))
+            //{
+            //    _onDataProviderChanged("No path to sample set parameters is set or could be found.");
+            //    return false;
+            //}
 
             try
             {

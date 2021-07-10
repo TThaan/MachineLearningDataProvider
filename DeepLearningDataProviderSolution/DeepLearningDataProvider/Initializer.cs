@@ -58,26 +58,26 @@ namespace DeepLearningDataProvider
 
         #region methods
 
-        public async Task<bool> CreateSampleSetAsync()
-        {
-            if (ParameterBuilder.Parameters == null)
-            {
-                OnDataProviderChanged("No sample set parameters are set.");
-                return false;
-            }
+        //public async Task<bool> GetSampleSetAsync()
+        //{
+        //    if (ParameterBuilder.Parameters == null)
+        //    {
+        //        OnDataProviderChanged("No sample set parameters are set.");
+        //        return false;
+        //    }
 
-            try
-            {
-                var sampleSetSteward = new SampleSetSteward();
+        //    try
+        //    {
+        //        var sampleSetSteward = new SampleSetSteward();
 
-                OnDataProviderChanged("Creating samples, please wait...");
-                SampleSet = await sampleSetSteward.CreateCustomSampleSetAsync(ParameterBuilder.Parameters);
-                SampleSet.Parameters = ParameterBuilder.Parameters;
-                OnDataProviderChanged("Successfully created samples.");
-                return true;
-            }
-            catch (Exception e) { OnDataProviderChanged(e.Message); return false; }
-        }
+        //        OnDataProviderChanged("Creating samples, please wait...");
+        //        SampleSet = await sampleSetSteward.CreateCustomSampleSetAsync(ParameterBuilder.Parameters);
+        //        SampleSet.Parameters = ParameterBuilder.Parameters;
+        //        OnDataProviderChanged("Successfully created samples.");
+        //        return true;
+        //    }
+        //    catch (Exception e) { OnDataProviderChanged(e.Message); return false; }
+        //}
         public async Task<bool> LoadSampleSetAsync()
         {
             try

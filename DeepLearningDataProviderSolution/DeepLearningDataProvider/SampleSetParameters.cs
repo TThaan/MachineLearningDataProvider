@@ -7,7 +7,7 @@ namespace DeepLearningDataProvider
     public interface ISampleSetParameters
     {
         float InputDistortion { get; set; }
-        SetName Name { get; set; }
+        string Name { get; set; }
         Dictionary<SampleType, string> Paths { get; set; }
         float TargetTolerance { get; set; }
         int TestingSamples { get; set; }
@@ -22,15 +22,28 @@ namespace DeepLearningDataProvider
 
         public SampleSetParameters()
         {
-            Paths = new Dictionary<SampleType, string>();
+            Name = "DefaultParameters";
+            Paths = new Dictionary<SampleType, string>
+            {
+                [SampleType.TrainingLabel] = "To be created..",
+                [SampleType.TrainingData] = "To be created..",
+                [SampleType.TestingLabel] = "To be created..",
+                [SampleType.TestingData] = "To be created.."
+            };
+            AllTrainingSamples = 1000;
+            AllTestingSamples = 16;
+            TrainingSamples = 1000;
+            TestingSamples = 16;
+            InputDistortion = .2f;
+            TargetTolerance = .3f;
         }
 
         #endregion
 
         #region public
 
-        [JsonConverter(typeof(StringEnumConverter))]
-        public SetName Name { get; set; }
+        //[JsonConverter(typeof(StringEnumConverter))]
+        public string Name { get; set; }
         public Dictionary<SampleType, string> Paths { get; set; }
         public int AllTestingSamples { get; set; }
         public int AllTrainingSamples { get; set; }

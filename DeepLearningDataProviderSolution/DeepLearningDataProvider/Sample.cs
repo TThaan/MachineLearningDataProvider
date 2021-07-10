@@ -2,7 +2,6 @@
 using MatrixExtensions;
 using Newtonsoft.Json;
 using System;
-using static DeepLearningDataProvider.Factories.FourPixCamSampleSetFactory;
 
 namespace DeepLearningDataProvider
 {
@@ -26,8 +25,8 @@ namespace DeepLearningDataProvider
         #region public
 
         public static float Tolerance { get; set; } = 0;
-        public int Id { get; internal set; }
-        public Label Label { get; set; }    // FourPixCam dedicated so far..
+        public int Id { get; set; }
+        public string Label { get; set; }    // FourPixCam dedicated so far..
         //[JsonConverter(typeof(GenericJsonConverter<float[]>))]
         //[JsonProperty(ItemConverterType = typeof(GenericJsonConverter<float>))]
         public dynamic RawInput { get; set; }
