@@ -1,26 +1,31 @@
-﻿using DeepLearningDataProvider.JsonConverters;
-using Newtonsoft.Json;
-using System;
+﻿using Microsoft.ML;
 
 namespace DeepLearningDataProvider
 {
     public interface ISampleSet
     {
-        ISampleSetParameters Parameters { get; set; }
-        Sample[] TestingSamples { get; set; }
-        Sample[] TrainingSamples { get; set; }
+        //ISampleSetParameters Parameters { get; set; }
+        //float[][] TestingSamples { get; set; }
+        //float[][] TrainingSamples { get; set; }
+        //float[][] TestingTargets { get; set; }
+        //float[][] TrainingTargets { get; set; }
+        Sample[] TestSet { get; set; }
+        Sample[] TrainSet { get; set; }
+        //Sample[] TestTargets { get; set; }
+        //Sample[] TrainTargets { get; set; }
     }
 
     //[Serializable]
     //[JsonObject()]
     public class SampleSet : ISampleSet
     {
-        public ISampleSetParameters Parameters { get; set; } // ISampleSetParameters?
-        //[JsonConverter(typeof(JsonConverter_Array<Sample>))]
-        //[JsonProperty(ItemConverterType = typeof(GenericJsonConverter<Sample>))]
-        public Sample[] TrainingSamples { get; set; }   // ISample?
-        //[JsonConverter(typeof(JsonConverter_Array<Sample>))]
-        //[JsonProperty(ItemConverterType = typeof(GenericJsonConverter<Sample>))]
-        public Sample[] TestingSamples { get; set; }    // ISample?
+        //public float[][] TestingSamples { get; set; }
+        //public float[][] TrainingSamples { get; set; }
+        //public float[][] TestingTargets { get; set; }
+        //public float[][] TrainingTargets { get; set; }
+        public Sample[] TestSet { get; set; }
+        public Sample[] TrainSet { get; set; }
+        //public Sample[] TestTargets { get; set; }
+        //public Sample[] TrainTargets { get; set; }
     }
 }

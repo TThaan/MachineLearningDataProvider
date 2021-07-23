@@ -8,7 +8,7 @@ namespace DeepLearningDataProvider.Builders
         #region fields
 
         private readonly Action<string> _onDataProviderChanged;
-        private string sampleSetParameters, sampleSet;
+        private string sampleSet;   //sampleSetParameters, 
 
         public PathBuilder(Action<string> onDataProviderChanged)
         {
@@ -20,21 +20,21 @@ namespace DeepLearningDataProvider.Builders
         #region properties
 
         public string FileName_SampleSet { get; set; } = "SampleSet";
-        public string FileName_SampleSetParameters { get; set; } = "SampleSetParameters";
+        // public string FileName_SampleSetParameters { get; set; } = "SampleSetParameters";
         public string FileName_Prefix { get; set; } = string.Empty;
         public string FileName_Suffix { get; set; } = ".txt";
 
         public string General { get; set; } = Path.GetTempPath();
-        public string SampleSetParameters
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(sampleSetParameters))
-                    return sampleSetParameters = Path.Combine(General, FileName_Prefix, FileName_SampleSetParameters + FileName_Suffix);
-                else return sampleSetParameters;
-            }
-            set { sampleSetParameters = value; }
-        }
+        //public string SampleSetParameters
+        //{
+        //    get
+        //    {
+        //        if (string.IsNullOrEmpty(sampleSetParameters))
+        //            return sampleSetParameters = Path.Combine(General, FileName_Prefix, FileName_SampleSetParameters + FileName_Suffix);
+        //        else return sampleSetParameters;
+        //    }
+        //    set { sampleSetParameters = value; }
+        //}
         public string SampleSet
         {
             get
@@ -77,14 +77,14 @@ namespace DeepLearningDataProvider.Builders
         {
             General = Path.GetTempPath();
 
-            sampleSetParameters = string.Empty;
+            //sampleSetParameters = string.Empty;
             sampleSet = string.Empty;
 
             _onDataProviderChanged($"Path for all files has been reset.");
         }
         public void UseGeneralPathAndDefaultNames()
         {
-            SetSampleSetParametersPath(Path.Combine(General, FileName_Prefix, FileName_SampleSetParameters + FileName_Suffix));
+            //SetSampleSetParametersPath(Path.Combine(General, FileName_Prefix, FileName_SampleSetParameters + FileName_Suffix));
             SetSampleSetPath(Path.Combine(General, FileName_Prefix, FileName_SampleSet + FileName_Suffix));
         }
 
@@ -95,11 +95,11 @@ namespace DeepLearningDataProvider.Builders
             SampleSet = path;
             _onDataProviderChanged("Path to the sample set has been set.");
         }
-        public void SetSampleSetParametersPath(string path)
-        {
-            SampleSetParameters = path;
-            _onDataProviderChanged("Path to parameters for the sample set has been set.");
-        }
+        //public void SetSampleSetParametersPath(string path)
+        //{
+        //    SampleSetParameters = path;
+        //    _onDataProviderChanged("Path to parameters for the sample set has been set.");
+        //}
 
         #endregion
 
