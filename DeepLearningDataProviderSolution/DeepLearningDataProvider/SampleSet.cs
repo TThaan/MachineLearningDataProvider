@@ -12,10 +12,10 @@ namespace DeepLearningDataProvider
     {
         Sample[] TestSet { get; set; }
         Sample[] TrainSet { get; set; }
-        PathBuilder PathBuilder { get; }
+        //PathBuilder PathBuilder { get; }
 
         Task<bool> LoadSampleSetAsync(string samplesFileName, float testSamplesFraction, int columnIndex_Label, params int[] ignoredColumnIndeces);
-        Task<bool> SaveSampleSetAsync(bool overWriteExistingFile = false);
+        Task<bool> SaveSampleSetAsync(string fileName, bool overWriteExistingFile = false);
 
         event DataProviderChangedEventHandler DataProviderChanged;
     }
@@ -25,7 +25,6 @@ namespace DeepLearningDataProvider
         #region fields & ctor
 
         private PathBuilder pathBuilder;
-        private ISampleSet sampleSet;
 
         public SampleSet()
         {
@@ -38,15 +37,15 @@ namespace DeepLearningDataProvider
 
         public Sample[] TestSet { get; set; }
         public Sample[] TrainSet { get; set; }
-        public PathBuilder PathBuilder
-        {
-            get
-            {
-                if (pathBuilder == null)
-                    OnDataProviderChanged("Paths are null");
-                return pathBuilder;
-            }
-        }        
+        //public PathBuilder PathBuilder
+        //{
+        //    get
+        //    {
+        //        if (pathBuilder == null)
+        //            OnDataProviderChanged("Paths are null");
+        //        return pathBuilder;
+        //    }
+        //}
 
         #endregion
 
@@ -72,7 +71,7 @@ namespace DeepLearningDataProvider
                 catch (Exception e) { OnDataProviderChanged(e.Message); return false; }
             });
         }
-        public async Task<bool> SaveSampleSetAsync(bool overWriteExistingFile = false)
+        public async Task<bool> SaveSampleSetAsync(string fileName, bool overWriteExistingFile = false)
         {
             if (TrainSet == null)
             { OnDataProviderChanged("There are no training samples loaded in SampleSet."); return false; }
@@ -85,7 +84,7 @@ namespace DeepLearningDataProvider
 
                 await ImpEx.Export.SaveAsCSVAsync(
                     TrainSet.Concat(TestSet),
-                    PathBuilder.SampleSet,
+                    fileName,
                     TrainSet.First().Features.Length + 1,
                     overWriteExistingFile);
 

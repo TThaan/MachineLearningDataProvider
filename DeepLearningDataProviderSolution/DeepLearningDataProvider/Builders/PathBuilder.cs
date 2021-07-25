@@ -3,6 +3,7 @@ using System.IO;
 
 namespace DeepLearningDataProvider.Builders
 {
+    // redundant? (functionality in NN-Builder)
     public class PathBuilder
     {
         #region fields
