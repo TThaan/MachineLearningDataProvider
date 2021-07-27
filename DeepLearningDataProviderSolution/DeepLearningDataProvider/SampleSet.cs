@@ -12,6 +12,7 @@ namespace DeepLearningDataProvider
     {
         Sample[] TestSet { get; set; }
         Sample[] TrainSet { get; set; }
+        Dictionary<string, float[]> Targets { get; set; }
         //PathBuilder PathBuilder { get; }
 
         Task<bool> LoadSampleSetAsync(string samplesFileName, float testSamplesFraction, int columnIndex_Label, params int[] ignoredColumnIndeces);
@@ -37,6 +38,7 @@ namespace DeepLearningDataProvider
 
         public Sample[] TestSet { get; set; }
         public Sample[] TrainSet { get; set; }
+        public Dictionary<string, float[]> Targets { get; set; } = new Dictionary<string, float[]>();
         //public PathBuilder PathBuilder
         //{
         //    get
@@ -122,7 +124,11 @@ namespace DeepLearningDataProvider
                     for (int i = 0; i < columns.Length; i++)
                     {
                         if (i == columnIndex_Label)
+                        {
                             newSample.Label = columns[i];
+                            if (!Targets.Keys.Contains(newSample.Label))
+                                Targets[newSample.Label] = null;
+                        }
                         else
                             features.Add(float.Parse(columns[i], CultureInfo.InvariantCulture));
                     }
@@ -130,8 +136,21 @@ namespace DeepLearningDataProvider
                     newSample.Features = features.ToArray();
                 }
 
+                MapLabelsToTargets();
+
                 return result;
             });
+        }
+        private void MapLabelsToTargets()
+        {
+            int labelsCount = Targets.Count;
+
+            for (int i = 0; i < labelsCount; i++)
+            {
+                var key = Targets.Keys.ElementAt(i);
+                Targets[key] = new float[labelsCount];
+                Targets[key][i] = 1;
+            }
         }
 
         #endregion
@@ -147,5 +166,7 @@ namespace DeepLearningDataProvider
         }
 
         #endregion
+
+
     }
 }
