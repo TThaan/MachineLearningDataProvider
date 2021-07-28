@@ -5,6 +5,6 @@
     {
         public string Label { get; set; }
         public float[] Features { get; set; }
-        public float[] Target { get; set; }
+        // public float[] Target { get; set; }
     }
 }
