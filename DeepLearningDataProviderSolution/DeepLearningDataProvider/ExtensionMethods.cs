@@ -122,5 +122,8 @@ namespace DeepLearningDataProvider
         }
 
         #endregion
+
+        // SaveAndLoad as extension methods?
+
     }
 }
