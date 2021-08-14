@@ -39,7 +39,7 @@ namespace DeepLearningDataProvider.SampleSetExtensionMethods
                         set.AppendedSamplesPerLabel.Keys.Contains(group.Key) ? set.AppendedSamplesPerLabel[group.Key] : 0));
                 SetArrangedTrainSet(set);
 
-                set.SamplesTotal = set.ArrangedTrainSet.Count;  // in SampleSet? // changes after injection (if not put in first if clause)?
+                set.Count = set.ArrangedTrainSet.Count;  // in SampleSet? // changes after injection (if not put in first if clause)?
             });
         }
 
@@ -54,7 +54,7 @@ namespace DeepLearningDataProvider.SampleSetExtensionMethods
                 decimal fractionOfAllUnrecognizedSamples = totalUnrecognizedSamples == 0
                 ? 0
                 : item.Value / totalUnrecognizedSamples;
-                set.AppendedSamplesPerLabel[item.Key] = (int)(set.SamplesTotal * injSetFraction * fractionOfAllUnrecognizedSamples);
+                set.AppendedSamplesPerLabel[item.Key] = (int)(set.Count * injSetFraction * fractionOfAllUnrecognizedSamples);
             }
         }
         private static IEnumerable<int?> GetRandomIndeces(SampleSet set, IGrouping<string, Sample> group, bool equalizeGroupSizes)

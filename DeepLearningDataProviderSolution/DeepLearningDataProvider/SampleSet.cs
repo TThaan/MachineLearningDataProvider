@@ -1,16 +1,11 @@
-﻿using DeepLearningDataProvider.Builders;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace DeepLearningDataProvider
 {
     public interface ISampleSet
     {
-        int SamplesTotal { get; set; }
+        int Count { get; set; }
         // decimal TestFraction { get; set; }
         Sample[] Samples { get; set; }
         Sample[] TestSet { get; set; }
@@ -42,7 +37,7 @@ namespace DeepLearningDataProvider
 
         #region ISampleSet
 
-        public int SamplesTotal { get; set; }
+        public int Count { get; set; }
         // public decimal TestFraction { get; set; }
         public Sample[] Samples { get; set; }
         public Sample[] TestSet { get; set; }
@@ -65,7 +60,7 @@ namespace DeepLearningDataProvider
 
         #region DataProviderEventHandler
 
-        public event DataProviderChangedEventHandler DataProviderChanged;
+        public event DataProviderChangedEventHandler DataProviderChanged;   // SampleSetChanged?
         internal void OnDataProviderChanged(string info)
         {
             DataProviderChanged?.Invoke(this, new DataProviderChangedEventArgs(info));
