@@ -81,6 +81,22 @@ namespace DeepLearningDataProvider
                     return false;
             }
         }
+        public static string ToStringFromCollection<T>(this IEnumerable<T> collection, string separator = ", ", int lineBreakAfter = 0, int spacesInNewLine = 0)
+        {
+            List<object> collectionWithLineBreaks = Enumerable.Cast<object>(collection.ToList()).ToList();
+
+            if (lineBreakAfter > 0)
+            {
+                collectionWithLineBreaks = collection.Select((x, i) =>
+                {
+                    if (i != 0 && i % lineBreakAfter == 0)
+                        return $"\n{string.Join(string.Empty, Enumerable.Repeat(' ', spacesInNewLine))}" + (object)(x.ToString());
+                    else
+                        return (object)x.ToString();
+                }).ToList();
+            }
+            return string.Join(separator, collectionWithLineBreaks.Select(x => x.ToString()));
+        }
         /// <summary>
         /// Supports following enums: ...
         /// Other types will cause an exception throw.
