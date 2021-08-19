@@ -10,15 +10,15 @@ namespace DeepLearningDataProvider.SampleSetExtensions
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append($"     Training Samples : {sampleSet.TrainSet.Count()}\n");
-            sb.Append($"     Test Samples     : {sampleSet.TestSet.Count()}\n");
-            sb.Append($"     Labels / Targets : {sampleSet.Targets.Count()}\n");
+            sb.Append($"Training Samples : {sampleSet.TrainSet.Count()}\n");
+            sb.Append($"Test Samples     : {sampleSet.TestSet.Count()}\n");
+            sb.Append($"Labels / Targets : {sampleSet.Targets.Count()}\n");
 
-            sb.Append("     First 5 training samples:\n");
+            sb.Append("\nTraining samples (first 5).\n\n");
             for (int i = 0; i <= 5; i++)
             {
-                sb.Append($"     Label    : {sampleSet.TrainSet[i].Label}");
-                sb.Append($"     Features : {sampleSet.TrainSet[i].Features.ToStringFromCollection(", ", lineBreakAfter, spacesInNewLine)}");
+                sb.Append($"Label    : {sampleSet.TrainSet[i].Label}");
+                sb.Append($"Features : {sampleSet.TrainSet[i].Features.ToStringFromCollection(", ", lineBreakAfter, spacesInNewLine)}\n");
             }
 
             return sb.ToString();
@@ -29,11 +29,11 @@ namespace DeepLearningDataProvider.SampleSetExtensions
 
             var labels = sampleSet.Targets.Keys.ToArray();
 
-            sb.Append($"\n     First {limit} labels & targets:\n");
+            sb.Append($"Labels & targets ({limit} max).\n\n");
             foreach (var kvp in sampleSet.Targets)
             {
-                sb.Append($"     Label   : {kvp.Key}");
-                sb.Append($"     Target  : {kvp.Value.ToStringFromCollection(", ", 20, 5)}");
+                sb.Append($"Label   : {kvp.Key}");
+                sb.Append($"Target  : {kvp.Value.ToStringFromCollection(", ", 20, 5)}\n");
 
                 int index = Array.IndexOf(labels, kvp.Key);
                 if (index >= limit)

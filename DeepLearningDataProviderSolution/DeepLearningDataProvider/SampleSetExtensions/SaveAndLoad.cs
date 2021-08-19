@@ -16,55 +16,53 @@ namespace DeepLearningDataProvider.SampleSetExtensionMethods
         {
             await Task.Run(() =>
             {
-                // Just because to access SampleSet's event..
-                SampleSet notifiedSampleSet = sampleSet as SampleSet;
+                LoadSampleSet(sampleSet, samplesFileName, split, columnIndex_Label, ignoredColumnIndeces);
+            });
+        }
+        public static void LoadSampleSet(this ISampleSet sampleSet, string samplesFileName, decimal split, int columnIndex_Label, params int[] ignoredColumnIndeces)//, int columnIndex_Target = -1
+        {
+            // Just because to access SampleSet's event..
+            SampleSet notifiedSampleSet = sampleSet as SampleSet;
 
-                // in try:
-                notifiedSampleSet.OnDataProviderChanged("Loading samples from file, please wait...");
+            // in try:
+            notifiedSampleSet.OnDataProviderChanged("Loading samples from file, please wait...");
 
-                // var result = new SampleSet();
-                string[] lines = File.ReadLines(samplesFileName).ToArray();
-                sampleSet.Samples = new Sample[lines.Count()];
+            // var result = new SampleSet();
+            string[] lines = File.ReadLines(samplesFileName).ToArray();
+            sampleSet.Samples = new Sample[lines.Count()];
 
-                // Get amount of feature columns
+            // Get amount of feature columns
 
-                int featureColumnsCount = lines.First().Where(x => x == ',').Count();
+            int featureColumnsCount = lines.First().Where(x => x == ',').Count();
 
-                // Get Samples (i.e. convert line to Sample?)
-                for (int lineNr = 0; lineNr < lines.Length; lineNr++)
+            // Get Samples (i.e. convert line to Sample?)
+            for (int lineNr = 0; lineNr < lines.Length; lineNr++)
+            {
+                List<float> features = new List<float>(featureColumnsCount);
+
+                Sample newSample = new Sample { Label = null, Features = new float[featureColumnsCount] };
+                sampleSet.Samples[lineNr] = newSample;
+
+                string[] columns = lines.ElementAt(lineNr).Split(',');
+                for (int colNr = 0; colNr < columns.Length; colNr++)
                 {
-                    List<float> features = new List<float>(featureColumnsCount);
-
-                    Sample newSample = new Sample { Label = null, Features = new float[featureColumnsCount] };
-                    sampleSet.Samples[lineNr] = newSample;
-
-                    string[] columns = lines.ElementAt(lineNr).Split(',');
-                    for (int colNr = 0; colNr < columns.Length; colNr++)
+                    if (colNr == columnIndex_Label)
                     {
-                        if (colNr == columnIndex_Label)
-                        {
-                            newSample.Label = columns[colNr];
-                            if (!sampleSet.Targets.Keys.Contains(newSample.Label))
-                                sampleSet.Targets[newSample.Label] = null;
-                        }
-                        else
-                            features.Add(float.Parse(columns[colNr], CultureInfo.InvariantCulture));
+                        newSample.Label = columns[colNr];
+                        if (!sampleSet.Targets.Keys.Contains(newSample.Label))
+                            sampleSet.Targets[newSample.Label] = null;
                     }
-
-                    newSample.Features = features.ToArray();
+                    else
+                        features.Add(float.Parse(columns[colNr], CultureInfo.InvariantCulture));
                 }
 
-                MapLabelsToTargets(sampleSet.Targets);
-                sampleSet.Split(split);
+                newSample.Features = features.ToArray();
+            }
 
-                notifiedSampleSet.OnDataProviderChanged("Successfully loaded samples.");
+            MapLabelsToTargets(sampleSet.Targets);
+            sampleSet.Split(split);
 
-                // try
-                // {
-                //     
-                // }
-                // catch (Exception e) { OnDataProviderChanged(e.Message); return null; }  // Better just throw (and don't return null)?
-            });
+            notifiedSampleSet.OnDataProviderChanged("Successfully loaded samples.");
         }
         public static async Task SaveSampleSetAsync(this ISampleSet sampleSet, string fileName, bool overWriteExistingFile = false)
         {
