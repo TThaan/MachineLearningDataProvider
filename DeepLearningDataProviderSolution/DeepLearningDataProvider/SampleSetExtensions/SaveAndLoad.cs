@@ -12,60 +12,67 @@ namespace DeepLearningDataProvider.SampleSetExtensionMethods
         /// <summary>
         /// Currently only csv is loaded, more is coming.
         /// </summary>
-        public static async Task LoadSampleSetAsync(this ISampleSet sampleSet, string samplesFileName, decimal split, int columnIndex_Label, params int[] ignoredColumnIndeces)//, int columnIndex_Target = -1
+        public static async Task LoadAsync(this ISampleSet sampleSet, string samplesFileName, decimal split, int columnIndex_Label, params int[] ignoredColumnIndeces)//, int columnIndex_Target = -1
         {
             await Task.Run(() =>
             {
-                LoadSampleSet(sampleSet, samplesFileName, split, columnIndex_Label, ignoredColumnIndeces);
-            });
-        }
-        public static void LoadSampleSet(this ISampleSet sampleSet, string samplesFileName, decimal split, int columnIndex_Label, params int[] ignoredColumnIndeces)//, int columnIndex_Target = -1
-        {
-            // Just because to access SampleSet's event..
-            SampleSet notifiedSampleSet = sampleSet as SampleSet;
+                // Just because to access SampleSet's event..
+                SampleSet notifiedSampleSet = sampleSet as SampleSet;
 
-            // in try:
-            notifiedSampleSet.OnDataProviderChanged("Loading samples from file, please wait...");
+                // in try:
+                notifiedSampleSet.OnDataProviderChanged("Loading samples from file, please wait...");
 
-            // var result = new SampleSet();
-            string[] lines = File.ReadLines(samplesFileName).ToArray();
-            sampleSet.Samples = new Sample[lines.Count()];
+                // var result = new SampleSet();
+                string[] lines = File.ReadLines(samplesFileName).ToArray();
+                sampleSet.Samples = new Sample[lines.Count()];
 
-            // Get amount of feature columns
+                // Get amount of feature columns
 
-            int featureColumnsCount = lines.First().Where(x => x == ',').Count();
+                int featureColumnsCount = lines.First().Where(x => x == ',').Count();
 
-            // Get Samples (i.e. convert line to Sample?)
-            for (int lineNr = 0; lineNr < lines.Length; lineNr++)
-            {
-                List<float> features = new List<float>(featureColumnsCount);
-
-                Sample newSample = new Sample { Label = null, Features = new float[featureColumnsCount] };
-                sampleSet.Samples[lineNr] = newSample;
-
-                string[] columns = lines.ElementAt(lineNr).Split(',');
-                for (int colNr = 0; colNr < columns.Length; colNr++)
+                // Get Samples (i.e. convert line to Sample?)
+                for (int lineNr = 0; lineNr < lines.Length; lineNr++)
                 {
-                    if (colNr == columnIndex_Label)
+                    List<float> features = new List<float>(featureColumnsCount);
+
+                    Sample newSample = new Sample { Label = null, Features = new float[featureColumnsCount] };
+                    sampleSet.Samples[lineNr] = newSample;
+
+                    string[] columns = lines.ElementAt(lineNr).Split(',');
+                    for (int colNr = 0; colNr < columns.Length; colNr++)
                     {
-                        newSample.Label = columns[colNr];
-                        if (!sampleSet.Targets.Keys.Contains(newSample.Label))
-                            sampleSet.Targets[newSample.Label] = null;
+                        if (colNr == columnIndex_Label)
+                        {
+                            newSample.Label = columns[colNr];
+                            if (!sampleSet.Targets.Keys.Contains(newSample.Label))
+                                sampleSet.Targets[newSample.Label] = null;
+                        }
+                        else
+                            features.Add(float.Parse(columns[colNr], CultureInfo.InvariantCulture));
                     }
-                    else
-                        features.Add(float.Parse(columns[colNr], CultureInfo.InvariantCulture));
+
+                    newSample.Features = features.ToArray();
                 }
 
-                newSample.Features = features.ToArray();
-            }
+                MapLabelsToTargets(sampleSet.Targets);
+                sampleSet.Split(split);
 
-            MapLabelsToTargets(sampleSet.Targets);
-            sampleSet.Split(split);
-
-            // throw new System.ArgumentException($"SaveAndLoad: {sampleSet.Samples.Length} {sampleSet.TestSet.Length}");
-            notifiedSampleSet.OnDataProviderChanged("Successfully loaded samples.");
+                // throw new System.ArgumentException($"SaveAndLoad: {sampleSet.Samples.Length} {sampleSet.TestSet.Length}");
+                notifiedSampleSet.OnDataProviderChanged("Successfully loaded samples.");
+            });
         }
-        public static async Task SaveSampleSetAsync(this ISampleSet sampleSet, string fileName, bool overWriteExistingFile = false)
+        public static async Task UnloadAsync(this ISampleSet sampleSet)
+        {
+            await Task.Run(() => 
+            {
+                sampleSet.ArrangedTrainSet.Clear();
+                sampleSet.Targets.Clear();
+                sampleSet.TrainSet = null;
+                sampleSet.TestSet = null;
+                sampleSet.Samples = null;
+            });
+        }
+        public static async Task SaveAsync(this ISampleSet sampleSet, string fileName, bool overWriteExistingFile = false)
         {
             // Just because to access SampleSet's event..
             SampleSet notifiedSampleSet = sampleSet as SampleSet;
@@ -85,15 +92,6 @@ namespace DeepLearningDataProvider.SampleSetExtensionMethods
                 overWriteExistingFile);
 
             notifiedSampleSet.OnDataProviderChanged("Successfully saved sample set.");
-
-            //try
-            //{
-                
-            //}
-            //catch (Exception e) 
-            //{ 
-            //    OnDataProviderChanged(e.Message); return false; 
-            //}
         }
 
         #region helpers

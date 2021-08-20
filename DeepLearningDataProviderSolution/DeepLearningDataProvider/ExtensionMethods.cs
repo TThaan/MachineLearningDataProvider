@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace DeepLearningDataProvider
 {
-    public static class ExtensionMethods
+    internal static class ExtensionMethods
     {
         internal static List<T> ToList<T>(this Array arr)
         {
