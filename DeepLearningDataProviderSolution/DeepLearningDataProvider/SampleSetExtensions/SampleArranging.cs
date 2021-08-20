@@ -15,9 +15,9 @@ namespace DeepLearningDataProvider.SampleSetExtensionMethods
         {
             sampleSet.TrainSet.Shuffle();
         }
-        public static void Split(this ISampleSet sampleSet, decimal split) 
+        public static void Split(this ISampleSet sampleSet, decimal split)
         {
-            int trainSamplesCount = (int)Math.Round(sampleSet.Samples.Count() * (1 - split), 0);
+            int trainSamplesCount = (int)Math.Round(sampleSet.Samples.Count() * (1 - split/100), 0);
             sampleSet.TrainSet = sampleSet.Samples.Take(trainSamplesCount).ToArray();
             sampleSet.TestSet = sampleSet.Samples.Skip(trainSamplesCount).ToArray();
         }
@@ -39,7 +39,7 @@ namespace DeepLearningDataProvider.SampleSetExtensionMethods
                         set.AppendedSamplesPerLabel.Keys.Contains(group.Key) ? set.AppendedSamplesPerLabel[group.Key] : 0));
                 SetArrangedTrainSet(set);
 
-                set.Count = set.ArrangedTrainSet.Count;  // in SampleSet? // changes after injection (if not put in first if clause)?
+                // set.Count = set.ArrangedTrainSet.Count;  // in SampleSet? // changes after injection (if not put in first if clause)?
             });
         }
 
@@ -54,7 +54,7 @@ namespace DeepLearningDataProvider.SampleSetExtensionMethods
                 decimal fractionOfAllUnrecognizedSamples = totalUnrecognizedSamples == 0
                 ? 0
                 : item.Value / totalUnrecognizedSamples;
-                set.AppendedSamplesPerLabel[item.Key] = (int)(set.Count * injSetFraction * fractionOfAllUnrecognizedSamples);
+                set.AppendedSamplesPerLabel[item.Key] = (int)(set.ArrangedTrainSet.Count * injSetFraction * fractionOfAllUnrecognizedSamples);
             }
         }
         private static IEnumerable<int?> GetRandomIndeces(SampleSet set, IGrouping<string, Sample> group, bool equalizeGroupSizes)

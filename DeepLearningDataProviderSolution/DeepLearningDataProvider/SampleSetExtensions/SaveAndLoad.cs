@@ -62,6 +62,7 @@ namespace DeepLearningDataProvider.SampleSetExtensionMethods
             MapLabelsToTargets(sampleSet.Targets);
             sampleSet.Split(split);
 
+            // throw new System.ArgumentException($"SaveAndLoad: {sampleSet.Samples.Length} {sampleSet.TestSet.Length}");
             notifiedSampleSet.OnDataProviderChanged("Successfully loaded samples.");
         }
         public static async Task SaveSampleSetAsync(this ISampleSet sampleSet, string fileName, bool overWriteExistingFile = false)

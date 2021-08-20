@@ -5,7 +5,7 @@ namespace DeepLearningDataProvider
 {
     public interface ISampleSet
     {
-        int Count { get; set; }
+        //int Count { get; set; }
         // decimal TestFraction { get; set; }
         Sample[] Samples { get; set; }
         Sample[] TestSet { get; set; }
@@ -37,7 +37,7 @@ namespace DeepLearningDataProvider
 
         #region ISampleSet
 
-        public int Count { get; set; }
+        //public int Count { get; set; }
         // public decimal TestFraction { get; set; }
         public Sample[] Samples { get; set; }
         public Sample[] TestSet { get; set; }
