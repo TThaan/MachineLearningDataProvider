@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Text;
 
-namespace DeepLearningDataProvider.SampleSetExtensions
+namespace DeepLearningDataProvider.SampleSetHelpers
 {
     public static class Presentation
     {

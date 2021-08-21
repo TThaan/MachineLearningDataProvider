@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DeepLearningDataProvider.SampleSetExtensionMethods
+namespace DeepLearningDataProvider.SampleSetHelpers
 {
     public static class SampleArranging
     {
@@ -17,7 +17,7 @@ namespace DeepLearningDataProvider.SampleSetExtensionMethods
         }
         public static void Split(this ISampleSet sampleSet, decimal split)
         {
-            int trainSamplesCount = (int)Math.Round(sampleSet.Samples.Count() * (1 - split/100), 0);
+            int trainSamplesCount = (int)Math.Round(sampleSet.Samples.Count() * (1 - split), 0);
             sampleSet.TrainSet = sampleSet.Samples.Take(trainSamplesCount).ToArray();
             sampleSet.TestSet = sampleSet.Samples.Skip(trainSamplesCount).ToArray();
         }
