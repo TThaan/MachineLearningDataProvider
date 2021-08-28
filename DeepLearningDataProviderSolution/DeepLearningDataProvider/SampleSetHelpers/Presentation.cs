@@ -8,39 +8,50 @@ namespace DeepLearningDataProvider.SampleSetHelpers
     {
         public static string GetPreviewOfSamples(this ISampleSet sampleSet, int lineBreakAfter = 4, int spacesInNewLine = 5)
         {
-            if (sampleSet == null || sampleSet.TrainSet == null || sampleSet.TestSet == null)
-                return "Sampleset has not been loaded yet.";
+            if (sampleSet.Samples == null || sampleSet.Samples.Length == 0)
+                return "Samples have not been loaded yet.";
 
-            // throw new System.ArgumentException($"Presentation: {sampleSet.Samples.Length}");
+            int longestLabelLength = sampleSet.Samples.Max(x => x.Label).Length;
+
             StringBuilder sb = new StringBuilder();
 
-            sb.Append($"Training Samples : {sampleSet.TrainSet.Count()}\n");
-            sb.Append($"Test Samples     : {sampleSet.TestSet.Count()}\n");
-            sb.Append($"Labels / Targets : {sampleSet.Targets.Count()}\n");
+            sb.Append($"Training Samples : {(sampleSet.TrainSet == null ? 0 : sampleSet.TrainSet.Count())}\n");
+            sb.Append($"Test Samples     : {(sampleSet.TestSet == null ? 0 : sampleSet.TestSet.Count())}\n");
 
-            int longestLabelLength = sampleSet.Targets.Keys.Max().Length;
-
-            sb.Append("\nTraining samples (first 5).\n\n");
-            for (int i = 0; i <= 5; i++)
+            if (!sampleSet.IsInitialized)
             {
-                sb.Append($"{sampleSet.TrainSet[i].Label}");
-                sb.AddSpacing(longestLabelLength, sampleSet.TrainSet[i].Label.Length);
-                sb.Append($" : {sampleSet.TrainSet[i].Features.ToStringFromCollection(", ", lineBreakAfter, spacesInNewLine)}\n");
+                sb.Append("\nSamples (first 5).\n\n");
+                for (int i = 0; i <= 5; i++)
+                {
+                    sb.Append($"{sampleSet.Samples[i].Label}");
+                    sb.AddSpacing(longestLabelLength, sampleSet.Samples[i].Label.Length);
+                    sb.Append($" : {sampleSet.Samples[i].Features.ToStringFromCollection(", ", lineBreakAfter, spacesInNewLine)}\n");
+                }
+            }
+            else
+            {
+                sb.Append("\nTraining samples (first 5).\n\n");
+                for (int i = 0; i <= 5; i++)
+                {
+                    sb.Append($"{sampleSet.TrainSet[i].Label}");
+                    sb.AddSpacing(longestLabelLength, sampleSet.TrainSet[i].Label.Length);
+                    sb.Append($" : {sampleSet.TrainSet[i].Features.ToStringFromCollection(", ", lineBreakAfter, spacesInNewLine)}\n");
+                }
             }
 
             return sb.ToString();
         }
         public static string GetPreviewOfTargets(this ISampleSet sampleSet, int limit)
         {
-            if (sampleSet == null || sampleSet.TrainSet == null || sampleSet.TestSet == null)
-                return "Sampleset has not been loaded yet.";
+            if (sampleSet.Samples == null || sampleSet.Samples.Length == 0)
+                return "Samples have not been loaded yet.";
+
+            var labels = sampleSet.Samples.Select(x => x.Label).Distinct().ToArray();   // sampleSet.Targets.Keys.ToArray();
+            int longestLabelLength = labels.Max().Length;
 
             StringBuilder sb = new StringBuilder();
 
-            var labels = sampleSet.Targets.Keys.ToArray();
-            int longestLabelLength = labels.Max().Length;
-
-            sb.Append($"Labels & targets ({limit} max).\n\n");
+            sb.Append($"Labels & targets ({limit} (max) of {labels.Length} (total)).\n\n");
             foreach (var kvp in sampleSet.Targets)
             {
                 int index = Array.IndexOf(labels, kvp.Key);

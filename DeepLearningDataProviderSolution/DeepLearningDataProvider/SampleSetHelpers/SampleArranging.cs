@@ -21,26 +21,23 @@ namespace DeepLearningDataProvider.SampleSetHelpers
             sampleSet.TrainSet = sampleSet.Samples.Take(trainSamplesCount).ToArray();
             sampleSet.TestSet = sampleSet.Samples.Skip(trainSamplesCount).ToArray();
         }
-        public static async Task ArrangeSamplesAsync(this ISampleSet sampleSet, bool shuffleSamples, Dictionary<string, int> testResult, bool equalizeGroupSizes = true)
+        public static void ArrangeSamplesAsync(this ISampleSet sampleSet, bool shuffleSamples, Dictionary<string, int> testResult, bool equalizeGroupSizes = true)
         {
-            await Task.Run(() =>
-            {
-                decimal injSetFraction = .5m;   // make dynamic
-                SampleSet set = sampleSet as SampleSet;
+            decimal injSetFraction = .5m;   // make dynamic
+            SampleSet set = sampleSet as SampleSet;
 
-                SetAppendedSamplesPerLabel(set, injSetFraction, testResult);
+            SetAppendedSamplesPerLabel(set, injSetFraction, testResult);
 
-                if (set.GroupedSamples == null)
-                    set.GroupedSamples = set.TrainSet.GroupBy(x => x.Label);
+            if (set.GroupedSamples == null)
+                set.GroupedSamples = set.TrainSet.GroupBy(x => x.Label);
 
-                set.GroupedAndRandomizedIndeces = set.GroupedSamples
-                    .ToDictionary(group => group.Key, group => new NullableIntArray(
-                        GetRandomIndeces(set, group, equalizeGroupSizes),
-                        set.AppendedSamplesPerLabel.Keys.Contains(group.Key) ? set.AppendedSamplesPerLabel[group.Key] : 0));
-                SetArrangedTrainSet(set);
+            set.GroupedAndRandomizedIndeces = set.GroupedSamples
+                .ToDictionary(group => group.Key, group => new NullableIntArray(
+                    GetRandomIndeces(set, group, equalizeGroupSizes),
+                    set.AppendedSamplesPerLabel.Keys.Contains(group.Key) ? set.AppendedSamplesPerLabel[group.Key] : 0));
+            SetArrangedTrainSet(set);
 
-                // set.Count = set.ArrangedTrainSet.Count;  // in SampleSet? // changes after injection (if not put in first if clause)?
-            });
+            // set.Count = set.ArrangedTrainSet.Count;  // in SampleSet? // changes after injection (if not put in first if clause)?
         }
 
         #region helpers

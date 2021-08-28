@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using DeepLearningDataProvider.SampleSetHelpers;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DeepLearningDataProvider
 {
@@ -12,6 +15,14 @@ namespace DeepLearningDataProvider
         Sample[] TrainSet { get; set; }
         List<Sample> ArrangedTrainSet { get; set; }
         Dictionary<string, float[]> Targets { get; set; }
+
+        /// <summary>
+        /// Load samples from file and prepare the sample set for training.
+        /// </summary>
+        void Initialize(decimal split);
+        void Reset();
+        bool IsInitialized { get; }
+
         //PathBuilder PathBuilder { get; }
 
         //Task<bool> LoadSampleSetAsync(string samplesFileName, float testSamplesFraction, int columnIndex_Label, params int[] ignoredColumnIndeces);
@@ -22,28 +33,56 @@ namespace DeepLearningDataProvider
 
     public class SampleSet : ISampleSet
     {
-        #region fields & ctor
-
-        // private PathBuilder pathBuilder;
-
-        public SampleSet()
-        {
-            //pathBuilder = new PathBuilder(OnDataProviderChanged);   // via DC?
-        }
-
-        #endregion
-
-        #region properties
-
         #region ISampleSet
 
-        //public int Count { get; set; }
-        // public decimal TestFraction { get; set; }
         public Sample[] Samples { get; set; }
         public Sample[] TestSet { get; set; }
         public Sample[] TrainSet { get; set; }
         public List<Sample> ArrangedTrainSet { get; set; } = new List<Sample>();
         public Dictionary<string, float[]> Targets { get; set; } = new Dictionary<string, float[]>();
+
+        #region Init
+
+        /// <summary>
+        /// Load samples from file and prepare the sample set for training.
+        /// </summary>
+        public void Initialize(decimal split)
+        {
+            if (Samples == null || Samples.Count() == 0)
+                throw new ArgumentException("To initialize the sample set samples have to be loaded into it.");
+            // await this.LoadSampleSetAsync(samplesFileName, split, columnIndex_Label, ignoredColumnIndeces);
+            MapLabelsToTargets(Targets);
+            this.Split(split);
+
+            // throw new System.ArgumentException($"SaveAndLoad: {sampleSet.Samples.Length} {sampleSet.TestSet.Length}");
+            // result.OnDataProviderChanged("Successfully loaded samples.");
+
+            IsInitialized = true;
+        }
+        public void Reset()
+        {
+            this.UnloadSamples();
+            IsInitialized = false;
+        }
+        public bool IsInitialized { get; private set; }
+
+        #region helpers
+
+        private static void MapLabelsToTargets(Dictionary<string, float[]> targets)
+        {
+            int labelsCount = targets.Count;
+
+            for (int i = 0; i < labelsCount; i++)
+            {
+                var key = targets.Keys.ElementAt(i);
+                targets[key] = new float[labelsCount];
+                targets[key][i] = 1;
+            }
+        }
+
+        #endregion
+
+        #endregion
 
         #endregion
 
@@ -51,12 +90,6 @@ namespace DeepLearningDataProvider
         internal Dictionary<string, NullableIntArray> GroupedAndRandomizedIndeces { get; set; }
         internal Dictionary<string, NullableIntArray> MultipliedGroupedAndRandomizedIndeces { get; set; } // unused?
         internal Dictionary<string, int> AppendedSamplesPerLabel { get; set; } = new Dictionary<string, int>();
-
-        #endregion
-
-        #region methods
-
-        #endregion
 
         #region DataProviderEventHandler
 
