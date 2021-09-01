@@ -58,6 +58,8 @@ namespace DeepLearningDataProvider.SampleSetHelpers
                     newSample.Features = features.ToArray();
                 }
 
+                MapLabelsToTargets(sampleSet.Targets);
+
                 return sampleSet;
             });
         }
@@ -90,5 +92,22 @@ namespace DeepLearningDataProvider.SampleSetHelpers
 
             // notifiedSampleSet.OnDataProviderChanged("Successfully saved sample set.");
         }
+
+        #region helpers
+
+        private static void MapLabelsToTargets(Dictionary<string, float[]> targets)
+        {
+            int labelsCount = targets.Count;
+
+            for (int i = 0; i < labelsCount; i++)
+            {
+                var key = targets.Keys.ElementAt(i);
+                targets[key] = new float[labelsCount];
+                targets[key][i] = 1;
+            }
+        }
+
+        #endregion
+
     }
 }

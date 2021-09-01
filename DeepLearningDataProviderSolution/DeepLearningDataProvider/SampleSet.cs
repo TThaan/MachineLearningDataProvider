@@ -50,11 +50,9 @@ namespace DeepLearningDataProvider
         {
             if (Samples == null || Samples.Count() == 0)
                 throw new ArgumentException("To initialize the sample set samples have to be loaded into it.");
-            // await this.LoadSampleSetAsync(samplesFileName, split, columnIndex_Label, ignoredColumnIndeces);
-            MapLabelsToTargets(Targets);
+
             this.Split(split);
 
-            // throw new System.ArgumentException($"SaveAndLoad: {sampleSet.Samples.Length} {sampleSet.TestSet.Length}");
             // result.OnDataProviderChanged("Successfully loaded samples.");
 
             IsInitialized = true;
@@ -65,22 +63,6 @@ namespace DeepLearningDataProvider
             IsInitialized = false;
         }
         public bool IsInitialized { get; private set; }
-
-        #region helpers
-
-        private static void MapLabelsToTargets(Dictionary<string, float[]> targets)
-        {
-            int labelsCount = targets.Count;
-
-            for (int i = 0; i < labelsCount; i++)
-            {
-                var key = targets.Keys.ElementAt(i);
-                targets[key] = new float[labelsCount];
-                targets[key][i] = 1;
-            }
-        }
-
-        #endregion
 
         #endregion
 
