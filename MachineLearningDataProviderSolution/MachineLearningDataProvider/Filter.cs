@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DeepLearningDataProvider
+namespace MachineLearningDataProvider
 {
     public static class Filter
     {

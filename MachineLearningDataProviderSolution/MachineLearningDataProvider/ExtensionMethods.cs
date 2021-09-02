@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace DeepLearningDataProvider
+namespace MachineLearningDataProvider
 {
     internal static class ExtensionMethods
     {

@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DeepLearningDataProvider.SampleSetHelpers
+namespace MachineLearningDataProvider.SampleSetHelpers
 {
     public static class SaveAndLoad
     {

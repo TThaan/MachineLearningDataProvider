@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace DeepLearningDataProvider
+namespace MachineLearningDataProvider
 {
     /// <summary>
     /// https://stackoverflow.com/a/7251724

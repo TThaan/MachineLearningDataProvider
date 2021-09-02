@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace DeepLearningDataProvider.Builders
+namespace MachineLearningDataProvider.Builders
 {
     // redundant? (functionality in NN-Builder)
     public class PathBuilder

@@ -1,4 +1,4 @@
-﻿namespace DeepLearningDataProvider
+﻿namespace MachineLearningDataProvider
 {
     public enum StorageFormat
     {

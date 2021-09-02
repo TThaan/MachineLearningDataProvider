@@ -1,10 +1,10 @@
-﻿using DeepLearningDataProvider.SampleSetHelpers;
+﻿using MachineLearningDataProvider.SampleSetHelpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DeepLearningDataProvider
+namespace MachineLearningDataProvider
 {
     public interface ISampleSet
     {

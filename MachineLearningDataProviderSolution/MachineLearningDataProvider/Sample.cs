@@ -1,4 +1,4 @@
-﻿namespace DeepLearningDataProvider
+﻿namespace MachineLearningDataProvider
 {
     // Corresponds to 'InputData' and 'OutputData' in a standard ML.Net code.
     public class Sample

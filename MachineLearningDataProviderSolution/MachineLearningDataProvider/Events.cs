@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DeepLearningDataProvider
+namespace MachineLearningDataProvider
 {
     public delegate void DataProviderChangedEventHandler(object sender, DataProviderChangedEventArgs e);
 

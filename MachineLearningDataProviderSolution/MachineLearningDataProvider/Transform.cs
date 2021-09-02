@@ -2,7 +2,7 @@
 using Microsoft.ML.Data;
 using Microsoft.ML.Transforms;
 
-namespace DeepLearningDataProvider
+namespace MachineLearningDataProvider
 {
     public static class Transform
     {
